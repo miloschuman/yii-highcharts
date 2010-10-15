@@ -1,11 +1,12 @@
 <?php
+
 /**
  * HighchartsWidget class file.
  *
  * @author Milo Schuman <miloschuman@gmail.com>
  * @link http://yii-highcharts.googlecode.com/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 0.1
+ * @version 0.2
  */
 
 /**
@@ -31,7 +32,7 @@
  * ));
  * </pre>
  *
- * By configuring the {@link options} property, you may specify the options
+ * By configuring the {@link $options} property, you may specify the options
  * that need to be passed to the Highcharts JavaScript object. Please refer to
  * the demo gallery and documentation on the {@link http://www.highcharts.com/
  * Highcharts website} for possible options.
@@ -60,28 +61,16 @@
  * Note: You must provide a valid JSON string (e.g. double quotes) when using
  * the second option. You can quickly validate your JSON string online using
  * {@link http://jsonlint.com/ JSONLint}.
+ *
+ * Note: You do not need to specify the <code>chart->renderTo</code> option as
+ * is shown in many of the examples on the Highcharts website. This value is
+ * automatically populated with the id of the widget's container element. If you
+ * wish to use a different container, feel free to specify a custom value.
  */
 class HighchartsWidget extends CWidget {
 
 	public $options = array();
 	public $htmlOptions = array();
-
-	/**
-	 * Initializes the widget.
-	 * This method will publish and register necessary script files.
-	 * If you override this method, make sure you call the parent implementation first.
-	 */
-	public function init() {
-		// register scripts
-		$basePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR;
-		$baseUrl = Yii::app()->getAssetManager()->publish($basePath);
-		$scriptFile = YII_DEBUG ? '/highcharts.src.js' : '/highcharts.js';
-		$cs = Yii::app()->clientScript;
-		$cs->registerCoreScript('jquery');
-		$cs->registerScriptFile($baseUrl . $scriptFile);
-
-		parent::init();
-	}
 
 	/**
 	 * Renders the widget.
@@ -100,13 +89,38 @@ class HighchartsWidget extends CWidget {
 			// TODO translate exception message
 		}
 
-		// define container element via Highcharts 'renderTo' option
-		if (!isset($this->options['chart']))
-			$this->options['chart'] = array();
-		$this->options['chart']['renderTo'] = $id;
+		// merge options with default values
+		$defaultOptions = array('chart' => array('renderTo' => $id), 'exporting' => array('enabled' => true));
+		$this->options = array_replace_recursive($defaultOptions, $this->options);
 
 		$jsOptions = CJavaScript::encode($this->options);
-		Yii::app()->clientScript->registerScript(__CLASS__ . '#' . $id, "var chart = new Highcharts.Chart($jsOptions);");
+		$this->registerScripts(__CLASS__ . '#' . $id, "var chart = new Highcharts.Chart($jsOptions);");
 	}
+
+	/**
+	 * Publishes and registers the necessary script files.
+	 *
+	 * @param string the id of the script to be inserted into the page
+	 * @param string the embedded script to be inserted into the page
+	 */
+	protected function registerScripts($id, $embeddedScript) {
+		$basePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR;
+		$baseUrl = Yii::app()->getAssetManager()->publish($basePath, false, 1, YII_DEBUG);
+		$scriptFile = YII_DEBUG ? '/highcharts.src.js' : '/highcharts.js';
+
+		$cs = Yii::app()->clientScript;
+		$cs->registerCoreScript('jquery');
+		$cs->registerScriptFile($baseUrl . $scriptFile);
+
+		// register exporting module if enabled via the 'exporting' option
+		if ($this->options['exporting']['enabled']) {
+			$scriptFile = YII_DEBUG ? '/exporting.src.js' : '/exporting.js';
+			$cs->registerScriptFile($baseUrl . $scriptFile);
+		}
+
+		$cs->registerScript($id, $embeddedScript);
+	}
+
 }
+
 ?>
