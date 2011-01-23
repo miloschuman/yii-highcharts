@@ -6,7 +6,7 @@
  * @author Milo Schuman <miloschuman@gmail.com>
  * @link http://yii-highcharts.googlecode.com/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 0.2
+ * @version 0.3
  */
 
 /**
@@ -36,7 +36,7 @@
  * that need to be passed to the Highcharts JavaScript object. Please refer to
  * the demo gallery and documentation on the {@link http://www.highcharts.com/
  * Highcharts website} for possible options.
- * 
+ *
  * Alternatively, you can use a valid JSON string in place of an associative
  * array to specify options:
  *
@@ -83,16 +83,15 @@ class HighchartsWidget extends CWidget {
 		echo CHtml::closeTag('div');
 
 		// check if options parameter is a json string
-		if (is_string($this->options)) {
-			if (!$this->options = CJSON::decode($this->options))
+		if(is_string($this->options)) {
+			if(!$this->options = CJSON::decode($this->options))
 				throw new CException('The options parameter is not valid JSON.');
 			// TODO translate exception message
 		}
 
 		// merge options with default values
 		$defaultOptions = array('chart' => array('renderTo' => $id), 'exporting' => array('enabled' => true));
-		$this->options = array_replace_recursive($defaultOptions, $this->options);
-
+		$this->options = CMap::mergeArray($defaultOptions, $this->options);
 		$jsOptions = CJavaScript::encode($this->options);
 		$this->registerScripts(__CLASS__ . '#' . $id, "var chart = new Highcharts.Chart($jsOptions);");
 	}
@@ -113,14 +112,10 @@ class HighchartsWidget extends CWidget {
 		$cs->registerScriptFile($baseUrl . $scriptFile);
 
 		// register exporting module if enabled via the 'exporting' option
-		if ($this->options['exporting']['enabled']) {
-			$scriptFile = YII_DEBUG ? '/exporting.src.js' : '/exporting.js';
-			$cs->registerScriptFile($baseUrl . $scriptFile);
+		if($this->options['exporting']['enabled']) {
+			$scriptFile = YII_DEBUG ? 'exporting.src.js' : 'exporting.js';
+			$cs->registerScriptFile("$baseUrl/modules/$scriptFile");
 		}
-
 		$cs->registerScript($id, $embeddedScript);
 	}
-
 }
-
-?>
