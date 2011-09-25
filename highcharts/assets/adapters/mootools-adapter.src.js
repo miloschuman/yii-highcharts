@@ -1,8 +1,8 @@
 /** 
- * @license Highcharts JS v2.1.2 (2011-01-12)
+ * @license Highcharts JS v2.1.6 (2011-07-08)
  * MooTools adapter
  * 
- * (c) 2010 Torstein Hønsi
+ * (c) 2010-2011 Torstein Hønsi
  * 
  * License: www.highcharts.com/license
  */
@@ -10,7 +10,15 @@
 // JSLint options:
 /*global Highcharts, Fx, $, $extend, $each, $merge, Events, Event */
 
-var HighchartsAdapter = {
+(function() {
+	
+var win = window,
+	legacy = !!win.$merge,
+	$extend = win.$extend || function() {
+		return Object.append.apply(Object, arguments)
+	};
+
+win.HighchartsAdapter = {
 	/**
 	 * Initialize the adapter. This is run once as Highcharts is first run.
 	 */
@@ -35,6 +43,8 @@ var HighchartsAdapter = {
 				);
 			}
 			fxStart.apply(fx, arguments);
+			
+			return this; // chainable
 		};
 		
 		// override Fx.step to allow animation of SVG element wrappers
@@ -108,7 +118,11 @@ var HighchartsAdapter = {
 	 * MooTool's each function
 	 * 
 	 */
-	each: $each,
+	each: function(arr, fn) {
+		return legacy ? 
+			$each(arr, fn) :
+			arr.each(fn);
+	},
 	
 	/**
 	 * Map an array
@@ -131,14 +145,22 @@ var HighchartsAdapter = {
 	/**
 	 * Deep merge two objects and return a third
 	 */
-	merge: $merge,
-	
-	/**
-	 * Hyphenate a string, like minWidth becomes min-width
-	 * @param {Object} str
-	 */
-	hyphenate: function (str){
-		return str.hyphenate();
+	merge: function() {
+		var args = arguments,
+			args13 = [{}], // MooTools 1.3+
+			i = args.length,
+			ret;
+		
+		if (legacy) {
+			ret = $merge.apply(null, args);
+		} else {
+			while (i--) {
+				args13[i + 1] = args[i];	
+			}
+			ret = Object.merge.apply(Object, args13);
+		}
+		
+		return ret;
 	},
 	
 	/**
@@ -174,8 +196,13 @@ var HighchartsAdapter = {
 				type = 'beforeunload';
 			}
 
-
-			el.removeEvent(type, fn);
+			if (defined(fn)) {
+				el.removeEvent(type, fn);
+			} else {
+				el.removeEvents(type);
+			}
+		} else {
+			el.removeEvents();
 		}
 	},
 	
@@ -211,4 +238,6 @@ var HighchartsAdapter = {
 			el.fx.cancel();
 		}
 	}
-};
+}
+
+})();

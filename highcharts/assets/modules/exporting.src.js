@@ -1,8 +1,8 @@
 /** 
- * @license Highcharts JS v2.1.2 (2011-01-12)
+ * @license Highcharts JS v2.1.6 (2011-07-08)
  * Exporting module
  * 
- * (c) 2010 Torstein Hønsi
+ * (c) 2010-2011 Torstein Hønsi
  * 
  * License: www.highcharts.com/license
  */
@@ -35,8 +35,7 @@ var HC = Highcharts,
 	PREFIX = 'highcharts-',
 	ABSOLUTE = 'absolute',
 	PX = 'px',
-
-
+	UNDEFINED = undefined,
 
 	// Add language and get the defaultOptions
 	defaultOptions = HC.setOptions({
@@ -106,6 +105,7 @@ defaultOptions.exporting = {
 	type: 'image/png',
 	url: 'http://export.highcharts.com/',
 	width: 800,
+	enableImages: false,
 	buttons: {
 		exportButton: {
 			//enabled: true,
@@ -190,7 +190,7 @@ extend(Chart.prototype, {
 			doc.createElementNS = function(ns, tagName) {
 				var elem = doc.createElement(tagName);
 				elem.getBBox = function() {
-					return chart.renderer.Element.prototype.getBBox.apply({ element: elem });
+					return HC.Renderer.prototype.Element.prototype.getBBox.apply({ element: elem });
 				};
 				return elem;
 			};
@@ -207,10 +207,14 @@ extend(Chart.prototype, {
 		// override some options
 		extend(options.chart, {
 			renderTo: sandbox,
-			renderer: 'SVG'
+			forExport: true
 		});
 		options.exporting.enabled = false; // hide buttons in print
-		options.chart.plotBackgroundImage = null; // the converter doesn't handle images
+
+		if (!options.exporting.enableImages) {
+			options.chart.plotBackgroundImage = null; // the converter doesn't handle images
+		}
+		
 		// prepare for replicating the chart
 		options.series = [];
 		each(chart.series, function(serie) {
@@ -218,35 +222,40 @@ extend(Chart.prototype, {
 			
 			seriesOptions.animation = false; // turn off animation
 			seriesOptions.showCheckbox = false;
+			seriesOptions.visible = serie.visible;
 			
-			// remove image markers
-			if (seriesOptions && seriesOptions.marker && /^url\(/.test(seriesOptions.marker.symbol)) { 
-				seriesOptions.marker.symbol = 'circle';
+			if (!options.exporting.enableImages) {
+				// remove image markers
+				if (seriesOptions && seriesOptions.marker && /^url\(/.test(seriesOptions.marker.symbol)) { 
+					seriesOptions.marker.symbol = 'circle';
+				}
 			}
 			
 			seriesOptions.data = [];
 			
 			each(serie.data, function(point) {
-				/*pointOptions = point.config === null || typeof point.config == 'number' ?
-					{ y: point.y } :
-					point.config;
-				pointOptions.x = point.x;*/
 				
 				// extend the options by those values that can be expressed in a number or array config
 				config = point.config;
-				pointOptions = extend(
-					typeof config == 'object' && config.constructor != Array && point.config, {
-						x: point.x,
-						y: point.y,
-						name: point.name
-					}
-				);
+				pointOptions = {
+					x: point.x,
+					y: point.y,
+					name: point.name
+				};
+
+				if (typeof config == 'object' && point.config && config.constructor != Array) {
+					extend(pointOptions, config);
+				}
+
+				pointOptions.visible = point.visible;
 				seriesOptions.data.push(pointOptions); // copy fresh updated data
 								
-				// remove image markers
-				pointMarker = point.config && point.config.marker;
-				if (pointMarker && /^url\(/.test(pointMarker.symbol)) { 
-					delete pointMarker.symbol;
+				if (!options.exporting.enableImages) {
+					// remove image markers
+					pointMarker = point.config && point.config.marker;
+					if (pointMarker && /^url\(/.test(pointMarker.symbol)) { 
+						delete pointMarker.symbol;
+					}
 				}
 			});	
 			
@@ -254,7 +263,21 @@ extend(Chart.prototype, {
 		});
 		
 		// generate the chart copy
-		chartCopy = new Highcharts.Chart(options);
+		chartCopy = new Highcharts.Chart(options);		
+		
+		// reflect axis extremes in the export
+		each(['xAxis', 'yAxis'], function(axisType) {
+			each (chart[axisType], function(axis, i) {
+				var axisCopy = chartCopy[axisType][i],
+					extremes = axis.getExtremes(),
+					userMin = extremes.userMin,
+					userMax = extremes.userMax;
+				
+				if (userMin !== UNDEFINED || userMax !== UNDEFINED) {
+					axisCopy.setExtremes(userMin, userMax, true, false);
+				}
+			});
+		});
 		
 		// get the SVG from the container's innerHTML
 		svg = chartCopy.container.innerHTML;
@@ -272,6 +295,9 @@ extend(Chart.prototype, {
 			.replace(/jQuery[0-9]+="[^"]+"/g, '')
 			.replace(/isTracker="[^"]+"/g, '')
 			.replace(/url\([^#]+#/g, 'url(#')
+			.replace(/<svg /, '<svg xmlns:xlink="http://www.w3.org/1999/xlink" ')
+			.replace(/ href=/g, ' xlink:href=')
+			/*.replace(/preserveAspectRatio="none">/g, 'preserveAspectRatio="none"/>')*/
 			/* This fails in IE < 8
 			.replace(/([0-9]+)\.([0-9]+)/g, function(s1, s2, s3) { // round off to save weight
 				return s2 +'.'+ s3[0];
@@ -282,6 +308,12 @@ extend(Chart.prototype, {
 			.replace(/class=([^" ]+)/g, 'class="$1"')
 			.replace(/ transform /g, ' ')
 			.replace(/:(path|rect)/g, '$1')
+			.replace(/<img ([^>]*)>/gi, '<image $1 />')
+			.replace(/<\/image>/g, '') // remove closing tags for images as they'll never have any content
+			.replace(/<image ([^>]*)([^\/])>/gi, '<image $1$2 />') // closes image tags for firefox
+			.replace(/width=(\d+)/g, 'width="$1"')
+			.replace(/height=(\d+)/g, 'height="$1"')
+			.replace(/hc-svg-href="/g, 'xlink:href="')
 			.replace(/style="([^"]+)"/g, function(s) {
 				return s.toLowerCase();
 			});

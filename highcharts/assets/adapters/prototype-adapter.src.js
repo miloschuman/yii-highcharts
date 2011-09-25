@@ -1,5 +1,5 @@
 /** 
- * @license Highcharts JS v2.1.2 (2011-01-12)
+ * @license Highcharts JS v2.1.6 (2011-07-08)
  * Prototype adapter
  * 
  * @author Michael Nelson, Torstein Hønsi.
@@ -154,8 +154,7 @@ return {
 	
 	removeEvent: function(el, event, handler){
 		if ($(el).stopObserving) {
-			el.stopObserving(el, event, handler);
-			
+			$(el).stopObserving(event, handler);
 		} else {
 			HighchartsAdapter._extend(el);
 			el._highcharts_stop_observing(event, handler);
@@ -167,20 +166,13 @@ return {
 		return arr.findAll(fn);
 	},
 	
-	// change leftPadding to left-padding
-	hyphenate: function(str){
-		return str.replace(/([A-Z])/g, function(a, b){
-			return '-' + b.toLowerCase();
-		});
-	},
-	
 	// um, map
 	map: function(arr, fn){
 		return arr.map(fn);
 	},
 	
 	// deep merge. merge({a : 'a', b : {b1 : 'b1', b2 : 'b2'}}, {b : {b2 : 'b2_prime'}, c : 'c'}) => {a : 'a', b : {b1 : 'b1', b2 : 'b2_prime'}, c : 'c'}
-	merge: function(){
+	/*merge: function(){
 		function doCopy(copy, original) {
 			var value,
 				key,
@@ -222,6 +214,36 @@ return {
 		}
 		
 		return retVal;
+	},*/
+	merge: function() { // the built-in prototype merge function doesn't do deep copy
+		function doCopy(copy, original) {
+			var value;
+				
+			for (var key in original) {
+				value = original[key];
+				if  (value && typeof value == 'object' && value.constructor != Array && 
+						typeof value.nodeType !== 'number') { 
+					copy[key] = doCopy(copy[key] || {}, value); // copy
+				
+				} else {
+					copy[key] = original[key];
+				}
+			}
+			return copy;
+		}
+		
+		function merge() {
+			var args = arguments,
+				retVal = {};
+		
+			for (var i = 0; i < args.length; i++) {
+				retVal = doCopy(retVal, args[i])
+			
+			}
+			return retVal;
+		}
+		
+		return merge.apply(this, arguments);
 	},
 	
 	// extend an object to handle highchart events (highchart objects, not svg elements). 
@@ -236,7 +258,15 @@ return {
 					this._highchart_events[name] = [this._highchart_events[name], fn].compact().flatten();
 				},
 				_highcharts_stop_observing: function(name, fn){
-					this._highchart_events[name] = [this._highchart_events[name]].compact().flatten().without(fn);
+					if (name) {
+						if (fn) {
+							this._highchart_events[name] = [this._highchart_events[name]].compact().flatten().without(fn);
+						} else {
+							delete this._highchart_events[name];
+						}
+					} else {
+						this._highchart_events = {};
+					}
 				},
 				_highcharts_fire: function(name, args){
 					(this._highchart_events[name] || []).each(function(fn){

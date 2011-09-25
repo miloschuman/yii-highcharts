@@ -117,6 +117,9 @@ Highcharts.theme = {
 			marker: {
 				lineColor: '#333'
 			}
+		},
+		candlestick: {
+			lineColor: 'white'
 		}
 	},
 	
@@ -150,7 +153,102 @@ Highcharts.theme = {
 				symbolFill: '#7797BE'
 			}
 		}
-	},	
+	},
+	
+	// scroll charts
+	rangeSelector: {
+		buttonTheme: {
+			fill: {
+				linearGradient: [0, 0, 0, 20],
+				stops: [
+					[0.4, '#888'],
+					[0.6, '#555']
+				]
+			},
+			stroke: '#000000',
+			style: {
+				color: '#CCC',
+				fontWeight: 'bold'
+			},
+			states: {
+				hover: {
+					fill: {
+						linearGradient: [0, 0, 0, 20],
+						stops: [
+							[0.4, '#BBB'],
+							[0.6, '#888']
+						]
+					},
+					stroke: '#000000',
+					style: {
+						color: 'white'
+					}
+				},
+				select: {
+					fill: {
+						linearGradient: [0, 0, 0, 20],
+						stops: [
+							[0.1, '#000'],
+							[0.3, '#333']
+						]
+					},
+					stroke: '#000000',
+					style: {
+						color: 'yellow'
+					}
+				}
+			}					
+		},
+		inputStyle: {
+			backgroundColor: '#333',
+			color: 'silver'
+		},
+		labelStyle: {
+			color: 'silver'
+		}
+	},
+	
+	navigator: {
+		handles: {
+			backgroundColor: '#666',
+			borderColor: '#AAA'
+		},
+		outlineColor: '#CCC',
+		maskFill: 'rgba(16, 16, 16, 0.5)',
+		series: {
+			color: '#7798BF',
+			lineColor: '#A6C7ED'
+		}
+	},
+	
+	scrollbar: {
+		barBackgroundColor: {
+				linearGradient: [0, 0, 0, 20],
+				stops: [
+					[0.4, '#888'],
+					[0.6, '#555']
+				]
+			},
+		barBorderColor: '#CCC',
+		buttonArrowColor: '#CCC',
+		buttonBackgroundColor: {
+				linearGradient: [0, 0, 0, 20],
+				stops: [
+					[0.4, '#888'],
+					[0.6, '#555']
+				]
+			},
+		buttonBorderColor: '#CCC',
+		rifleColor: '#FFF',
+		trackBackgroundColor: {
+			linearGradient: [0, 0, 0, 10],
+			stops: [
+				[0, '#000'],
+				[1, '#333']
+			]
+		},
+		trackBorderColor: '#666'
+	},
 	
 	// special colors for some of the demo examples
 	legendBackgroundColor: 'rgba(48, 48, 48, 0.8)',
