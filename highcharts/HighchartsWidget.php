@@ -6,7 +6,7 @@
  * @author Milo Schuman <miloschuman@gmail.com>
  * @link http://yii-highcharts.googlecode.com/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 0.4
+ * @version 0.5
  */
 
 /**
@@ -117,8 +117,8 @@ class HighchartsWidget extends CWidget {
 			$cs->registerScriptFile("$baseUrl/modules/$scriptFile");
 		}
 		
-		// register global theme if specified vie the 'theme' option
-		if($this->options['theme']) {
+		// register global theme if specified via the 'theme' option
+		if(isset($this->options['theme'])) {
 			$scriptFile = $this->options['theme'] . ".js";
 			$cs->registerScriptFile("$baseUrl/themes/$scriptFile");
 		}
