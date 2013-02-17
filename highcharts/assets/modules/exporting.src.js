@@ -1,5 +1,5 @@
 /**
- * @license Highcharts JS v2.1.9 (2011-11-11)
+ * @license Highcharts JS v2.3.5 (2012-12-19)
  * Exporting module
  *
  * (c) 2010-2011 Torstein Hønsi
@@ -10,24 +10,23 @@
 // JSLint options:
 /*global Highcharts, document, window, Math, setTimeout */
 
-(function () { // encapsulate
+(function (Highcharts) { // encapsulate
 
 // create shortcuts
-var HC = Highcharts,
-	Chart = HC.Chart,
-	addEvent = HC.addEvent,
-	removeEvent = HC.removeEvent,
-	createElement = HC.createElement,
-	discardElement = HC.discardElement,
-	css = HC.css,
-	merge = HC.merge,
-	each = HC.each,
-	extend = HC.extend,
+var Chart = Highcharts.Chart,
+	addEvent = Highcharts.addEvent,
+	removeEvent = Highcharts.removeEvent,
+	createElement = Highcharts.createElement,
+	discardElement = Highcharts.discardElement,
+	css = Highcharts.css,
+	merge = Highcharts.merge,
+	each = Highcharts.each,
+	extend = Highcharts.extend,
 	math = Math,
 	mathMax = math.max,
 	doc = document,
 	win = window,
-	hasTouch = doc.documentElement.ontouchstart !== undefined,
+	isTouchDevice = Highcharts.isTouchDevice,
 	M = 'M',
 	L = 'L',
 	DIV = 'div',
@@ -37,7 +36,8 @@ var HC = Highcharts,
 	ABSOLUTE = 'absolute',
 	PX = 'px',
 	UNDEFINED,
-	defaultOptions = HC.getOptions();
+	symbols = Highcharts.Renderer.prototype.symbols,
+	defaultOptions = Highcharts.getOptions();
 
 	// Add language
 	extend(defaultOptions.lang, {
@@ -60,7 +60,7 @@ defaultOptions.navigation = {
 		padding: '0 5px',
 		background: NONE,
 		color: '#303030',
-		fontSize: hasTouch ? '14px' : '11px'
+		fontSize: isTouchDevice ? '14px' : '11px'
 	},
 	menuItemHoverStyle: {
 		background: '#4572A5',
@@ -105,7 +105,6 @@ defaultOptions.exporting = {
 	type: 'image/png',
 	url: 'http://export.highcharts.com/',
 	width: 800,
-	enableImages: false,
 	buttons: {
 		exportButton: {
 			//enabled: true,
@@ -141,16 +140,21 @@ defaultOptions.exporting = {
 						type: 'image/svg+xml'
 					});
 				}
-			}/*, {
+			}
+			// Enable this block to add "View SVG" to the dropdown menu
+			/*
+			,{
+
 				text: 'View SVG',
-				onclick: function() {
+				onclick: function () {
 					var svg = this.getSVG()
 						.replace(/</g, '\n&lt;')
 						.replace(/>/g, '&gt;');
 
-					doc.body.innerHTML = '<pre>'+ svg +'</pre>';
+					doc.body.innerHTML = '<pre>' + svg + '</pre>';
 				}
-			}*/]
+			} // */
+			]
 
 		},
 		printButton: {
@@ -168,7 +172,35 @@ defaultOptions.exporting = {
 	}
 };
 
+// Add the Highcharts.post utility
+Highcharts.post = function (url, data) {
+	var name,
+		form;
+	
+	// create the form
+	form = createElement('form', {
+		method: 'post',
+		action: url,
+		enctype: 'multipart/form-data'
+	}, {
+		display: NONE
+	}, doc.body);
 
+	// add the data
+	for (name in data) {
+		createElement('input', {
+			type: HIDDEN,
+			name: name,
+			value: data[name]
+		}, null, form);
+	}
+
+	// submit
+	form.submit();
+
+	// clean up
+	discardElement(form);
+};
 
 extend(Chart.prototype, {
 	/**
@@ -182,20 +214,13 @@ extend(Chart.prototype, {
 			sandbox,
 			svg,
 			seriesOptions,
-			config,
-			pointOptions,
-			pointMarker,
 			options = merge(chart.options, additionalOptions); // copy the options and add extra options
 
 		// IE compatibility hack for generating SVG content that it doesn't really understand
 		if (!doc.createElementNS) {
 			/*jslint unparam: true*//* allow unused parameter ns in function below */
 			doc.createElementNS = function (ns, tagName) {
-				var elem = doc.createElement(tagName);
-				elem.getBBox = function () {
-					return HC.Renderer.prototype.Element.prototype.getBBox.apply({ element: elem });
-				};
-				return elem;
+				return doc.createElement(tagName);
 			};
 			/*jslint unparam: false*/
 		}
@@ -214,56 +239,20 @@ extend(Chart.prototype, {
 			forExport: true
 		});
 		options.exporting.enabled = false; // hide buttons in print
-
-		if (!options.exporting.enableImages) {
-			options.chart.plotBackgroundImage = null; // the converter doesn't handle images
-		}
+		options.chart.plotBackgroundImage = null; // the converter doesn't handle images
 
 		// prepare for replicating the chart
 		options.series = [];
 		each(chart.series, function (serie) {
-			seriesOptions = serie.options;
-
-			seriesOptions.animation = false; // turn off animation
-			seriesOptions.showCheckbox = false;
-			seriesOptions.visible = serie.visible;
-
-			if (!options.exporting.enableImages) {
-				// remove image markers
-				if (seriesOptions && seriesOptions.marker && /^url\(/.test(seriesOptions.marker.symbol)) {
-					seriesOptions.marker.symbol = 'circle';
-				}
-			}
-
-			seriesOptions.data = [];
-
-			each(serie.data, function (point) {
-
-				// extend the options by those values that can be expressed in a number or array config
-				config = point.config;
-				pointOptions = {
-					x: point.x,
-					y: point.y,
-					name: point.name
-				};
-
-				if (typeof config === 'object' && point.config && config.constructor !== Array) {
-					extend(pointOptions, config);
-				}
-
-				pointOptions.visible = point.visible;
-				seriesOptions.data.push(pointOptions); // copy fresh updated data
-
-				if (!options.exporting.enableImages) {
-					// remove image markers
-					pointMarker = point.config && point.config.marker;
-					if (pointMarker && /^url\(/.test(pointMarker.symbol)) {
-						delete pointMarker.symbol;
-					}
-				}
+			seriesOptions = merge(serie.options, {
+				animation: false, // turn off animation
+				showCheckbox: false,
+				visible: serie.visible
 			});
 
-			options.series.push(seriesOptions);
+			if (!seriesOptions.isInternal) { // used for the navigator series that has its own option set
+				options.series.push(seriesOptions);
+			}
 		});
 
 		// generate the chart copy
@@ -301,7 +290,8 @@ extend(Chart.prototype, {
 			.replace(/url\([^#]+#/g, 'url(#')
 			.replace(/<svg /, '<svg xmlns:xlink="http://www.w3.org/1999/xlink" ')
 			.replace(/ href=/g, ' xlink:href=')
-			/*.replace(/preserveAspectRatio="none">/g, 'preserveAspectRatio="none"/>')*/
+			.replace(/\n/, ' ')
+			.replace(/<\/svg>.*?$/, '</svg>') // any HTML added to the container after the SVG (#894)
 			/* This fails in IE < 8
 			.replace(/([0-9]+)\.([0-9]+)/g, function(s1, s2, s3) { // round off to save weight
 				return s2 +'.'+ s3[0];
@@ -312,16 +302,14 @@ extend(Chart.prototype, {
 			.replace(/&shy;/g,  '\u00AD') // soft hyphen
 
 			// IE specific
+			.replace(/<IMG /g, '<image ')
+			.replace(/height=([^" ]+)/g, 'height="$1"')
+			.replace(/width=([^" ]+)/g, 'width="$1"')
+			.replace(/hc-svg-href="([^"]+)">/g, 'xlink:href="$1"/>')
 			.replace(/id=([^" >]+)/g, 'id="$1"')
 			.replace(/class=([^" ]+)/g, 'class="$1"')
 			.replace(/ transform /g, ' ')
 			.replace(/:(path|rect)/g, '$1')
-			.replace(/<img ([^>]*)>/gi, '<image $1 />')
-			.replace(/<\/image>/g, '') // remove closing tags for images as they'll never have any content
-			.replace(/<image ([^>]*)([^\/])>/gi, '<image $1$2 />') // closes image tags for firefox
-			.replace(/width=(\d+)/g, 'width="$1"')
-			.replace(/height=(\d+)/g, 'height="$1"')
-			.replace(/hc-svg-href="/g, 'xlink:href="')
 			.replace(/style="([^"]+)"/g, function (s) {
 				return s.toLowerCase();
 			});
@@ -342,42 +330,23 @@ extend(Chart.prototype, {
 	 * @param {Object} chartOptions Additional chart options for the SVG representation of the chart
 	 */
 	exportChart: function (options, chartOptions) {
-		var form,
-			chart = this,
-			svg = chart.getSVG(chartOptions);
+		var exportingOptions = this.options.exporting,
+			svg = this.getSVG(merge(exportingOptions.chartOptions, chartOptions));
 
 		// merge the options
-		options = merge(chart.options.exporting, options);
-
-		// create the form
-		form = createElement('form', {
-			method: 'post',
-			action: options.url
-		}, {
-			display: NONE
-		}, doc.body);
-
-		// add the values
-		each(['filename', 'type', 'width', 'svg'], function (name) {
-			createElement('input', {
-				type: HIDDEN,
-				name: name,
-				value: {
-					filename: options.filename || 'chart',
-					type: options.type,
-					width: options.width,
-					svg: svg
-				}[name]
-			}, null, form);
+		options = merge(exportingOptions, options);
+		
+		// do the post
+		Highcharts.post(options.url, {
+			filename: options.filename || 'chart',
+			type: options.type,
+			width: options.width,
+			scale: options.scale || 2,
+			svg: svg
 		});
 
-		// submit
-		form.submit();
-
-		// clean up
-		discardElement(form);
 	},
-
+	
 	/**
 	 * Print the chart
 	 */
@@ -451,6 +420,7 @@ extend(Chart.prototype, {
 			boxShadow = '3px 3px 10px #888',
 			innerMenu,
 			hide,
+			hideTimer,
 			menuStyle;
 
 		// create the menu only the first time
@@ -477,7 +447,13 @@ extend(Chart.prototype, {
 				css(menu, { display: NONE });
 			};
 
-			addEvent(menu, 'mouseleave', hide);
+			// Hide the menu some time after mouse leave (#1357)
+			addEvent(menu, 'mouseleave', function () {
+				hideTimer = setTimeout(hide, 500);
+			});
+			addEvent(menu, 'mouseenter', function () {
+				clearTimeout(hideTimer);
+			});
 
 
 			// create the items
@@ -495,7 +471,7 @@ extend(Chart.prototype, {
 						cursor: 'pointer'
 					}, menuItemStyle), innerMenu);
 
-					div[hasTouch ? 'ontouchstart' : 'onclick'] = function () {
+					div.onclick = function () {
 						hide();
 						item.onclick.apply(chart, arguments);
 					};
@@ -539,14 +515,12 @@ extend(Chart.prototype, {
 			btnOptions = merge(chart.options.navigation.buttonOptions, options),
 			onclick = btnOptions.onclick,
 			menuItems = btnOptions.menuItems,
-			/*position = chart.getAlignment(btnOptions),
-			buttonLeft = position.x,
-			buttonTop = position.y,*/
 			buttonWidth = btnOptions.width,
 			buttonHeight = btnOptions.height,
 			box,
 			symbol,
 			button,
+			menuKey,
 			borderWidth = btnOptions.borderWidth,
 			boxAttr = {
 				stroke: btnOptions.borderColor
@@ -555,7 +529,13 @@ extend(Chart.prototype, {
 			symbolAttr = {
 				stroke: btnOptions.symbolStroke,
 				fill: btnOptions.symbolFill
-			};
+			},
+			symbolSize = btnOptions.symbolSize || 12;
+
+		if (!chart.btnCount) {
+			chart.btnCount = 0;
+		}
+		menuKey = chart.btnCount++;
 
 		// Keeps references to the button elements
 		if (!chart.exportDivElements) {
@@ -620,14 +600,13 @@ extend(Chart.prototype, {
 			.on('click', revert)
 			.add();
 
-		//addEvent(button.element, 'click', revert);
-
 		// add the click event
 		if (menuItems) {
+
 			onclick = function () {
 				revert();
 				var bBox = button.getBBox();
-				chart.contextMenu('export-menu', menuItems, bBox.x, bBox.y, buttonWidth, buttonHeight);
+				chart.contextMenu('menu' + menuKey, menuItems, bBox.x, bBox.y, buttonWidth, buttonHeight);
 			};
 		}
 		/*addEvent(button.element, 'click', function() {
@@ -640,9 +619,10 @@ extend(Chart.prototype, {
 		// the icon
 		symbol = renderer.symbol(
 				btnOptions.symbol,
-				btnOptions.symbolX,
-				btnOptions.symbolY,
-				(btnOptions.symbolSize || 12) / 2
+				btnOptions.symbolX - (symbolSize / 2),
+				btnOptions.symbolY - (symbolSize / 2),
+				symbolSize,				
+				symbolSize
 			)
 			.align(btnOptions, true)
 			.attr(extend(symbolAttr, {
@@ -686,53 +666,67 @@ extend(Chart.prototype, {
 	}
 });
 
+/**
+ * Crisp for 1px stroke width, which is default. In the future, consider a smarter,
+ * global function.
+ */
+function crisp(arr) {
+	var i = arr.length;
+	while (i--) {
+		if (typeof arr[i] === 'number') {
+			arr[i] = Math.round(arr[i]) - 0.5;		
+		}
+	}
+	return arr;
+}
+
 // Create the export icon
-HC.Renderer.prototype.symbols.exportIcon = function (x, y, radius) {
-	return [
+symbols.exportIcon = function (x, y, width, height) {
+	return crisp([
 		M, // the disk
-		x - radius, y + radius,
+		x, y + width,
 		L,
-		x + radius, y + radius,
-		x + radius, y + radius * 0.5,
-		x - radius, y + radius * 0.5,
+		x + width, y + height,
+		x + width, y + height * 0.8,
+		x, y + height * 0.8,
 		'Z',
 		M, // the arrow
-		x, y + radius * 0.5,
+		x + width * 0.5, y + height * 0.8,
 		L,
-		x - radius * 0.5, y - radius / 3,
-		x - radius / 6, y - radius / 3,
-		x - radius / 6, y - radius,
-		x + radius / 6, y - radius,
-		x + radius / 6, y - radius / 3,
-		x + radius * 0.5, y - radius / 3,
+		x + width * 0.8, y + height * 0.4,
+		x + width * 0.4, y + height * 0.4,
+		x + width * 0.4, y,
+		x + width * 0.6, y,
+		x + width * 0.6, y + height * 0.4,
+		x + width * 0.2, y + height * 0.4,
 		'Z'
-	];
+	]);
 };
 // Create the print icon
-HC.Renderer.prototype.symbols.printIcon = function (x, y, radius) {
-	return [
+symbols.printIcon = function (x, y, width, height) {
+	return crisp([
 		M, // the printer
-		x - radius, y + radius * 0.5,
+		x, y + height * 0.7,
 		L,
-		x + radius, y + radius * 0.5,
-		x + radius, y - radius / 3,
-		x - radius, y - radius / 3,
+		x + width, y + height * 0.7,
+		x + width, y + height * 0.4,
+		x, y + height * 0.4,
 		'Z',
 		M, // the upper sheet
-		x - radius * 0.5, y - radius / 3,
+		x + width * 0.2, y + height * 0.4,
 		L,
-		x - radius * 0.5, y - radius,
-		x + radius * 0.5, y - radius,
-		x + radius * 0.5, y - radius / 3,
+		x + width * 0.2, y,
+		x + width * 0.8, y,
+		x + width * 0.8, y + height * 0.4,
 		'Z',
 		M, // the lower sheet
-		x - radius * 0.5, y + radius * 0.5,
+		x + width * 0.2, y + height * 0.7,
 		L,
-		x - radius * 0.75, y + radius,
-		x + radius * 0.75, y + radius,
-		x + radius * 0.5, y + radius * 0.5,
+		x, y + height,
+		x + width, y + height,
+		x + width * 0.8, y + height * 0.7,
 		'Z'
-	];
+	]);
 };
 
 
@@ -755,4 +749,4 @@ Chart.prototype.callbacks.push(function (chart) {
 });
 
 
-}());
+}(Highcharts));

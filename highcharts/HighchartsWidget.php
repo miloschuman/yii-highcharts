@@ -4,7 +4,7 @@
  * HighchartsWidget class file.
  *
  * @author Milo Schuman <miloschuman@gmail.com>
- * @link http://yii-highcharts.googlecode.com/
+ * @link https://github.com/miloschuman/yii-highcharts/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  * @version 0.5
  */
