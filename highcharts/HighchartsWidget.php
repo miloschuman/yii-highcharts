@@ -73,7 +73,6 @@ class HighchartsWidget extends CWidget
 	public $options = array();
 	public $htmlOptions = array();
 	public $scripts = array();
-	public $themes = array();
 
 
 	/**
@@ -122,12 +121,6 @@ class HighchartsWidget extends CWidget
 		foreach($this->scripts as $script) {
 			$scriptFile = YII_DEBUG ? $script . '.src.js' : $script . '.js';
 			$cs->registerScriptFile("$baseUrl/$scriptFile");
-		}
-
-		// register themes
-		foreach($this->themes as $theme) {
-			$scriptFile = $theme . '.js';
-			$cs->registerScriptFile("$baseUrl/themes/$scriptFile");
 		}
 
 		$cs->registerScript($id, $embeddedScript, CClientScript::POS_LOAD);
