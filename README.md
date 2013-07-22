@@ -9,8 +9,6 @@ This extension encapsulates the [Highcharts](http://www.highcharts.com/) graphin
 
 Compared to the other JavaScript charting libraries (Flot, jqPlot), Highcharts requires a more verbose configuration but also produces higher quality (animated) graphs, supports more advanced options without plugins, and uses only a single JavaScript file by default.
 
-Please use the 'Reviews' tab only for reviews. If you have questions, requests, or bug reports use the links below.
-
 
 Links
 -----
@@ -89,7 +87,7 @@ Tips
   ```php
   ...
   'tooltip' => array(
-     'formatter' => 'js:function(){ return this.series.name; }'
+       'formatter' => 'js:function(){ return this.series.name; }'
   ),
   ...
   ```
@@ -105,9 +103,9 @@ Tips
   ```php
   ...
   'scripts' => array(
-     'highcharts-more',   // enables supplementary chart types (gauge, arearange, columnrange, etc.)
-     'modules/exporting', // adds Exporting button/menu to chart
-     'themes/grid'        // applies global 'grid' theme to all charts
+       'highcharts-more',   // enables supplementary chart types (gauge, arearange, columnrange, etc.)
+       'modules/exporting', // adds Exporting button/menu to chart
+       'themes/grid'        // applies global 'grid' theme to all charts
   ),
   ...
   ```
@@ -119,31 +117,31 @@ Tips
 Change Log
 ----------
 
-### v3.0.2 (2013 July 20) ###
+### [v3.0.2](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.2) (2013 July 22) ###
 * Upgraded Highcharts core library to the latest release (3.0.2). See the Highcharts [changelog](http://highcharts.com/documentation/changelog "Changelog") for more information about what's new in this version.
 * The top-level 'scripts' option was added (per [Meng's recommendation](http://www.yiiframework.com/extension/highcharts/#c13934)) to streamline the inclusion of Highcharts' expanding catalog of adapters, modules, themes, and extended chart types. See "Tips" section above.
 
-### v2.3.5 2013 February 17 ###
+### [v2.3.5](https://github.com/miloschuman/yii-highcharts/releases/tag/v2.3.5) (2013 February 17) ###
 * Upgraded Highcharts core library to the latest release (2.3.5).
 * Added support for supplementary chart types: gauge, arearange, areasplinerange,  and columnrange.
 * Fix for [PHP Notice issue](http://www.yiiframework.com/extension/highcharts/#c6119) mentioned by nervlin.
 * Changed release numbering scheme to match underlying library version.
 
-### v0.5 2011 December 24 ###
+### [v0.5](https://github.com/miloschuman/yii-highcharts/releases/tag/v0.5) (2011 December 24) ###
 * Upgraded Highcharts core library to the latest release (2.1.9).
 * Minor bug fix.
 
-### v0.4 2011 September 25 ###
+### [v0.4](https://github.com/miloschuman/yii-highcharts/releases/tag/v0.4) (2011 September 25) ###
 * Upgraded Highcharts core library to the latest release (2.1.6).
 * Added global theming support.
 
-### v0.3 2011 January 23 ###
+### [v0.3](https://github.com/miloschuman/yii-highcharts/releases/tag/v0.3) (2011 January 23) ###
 * Added support for PHP versions < 5.3.
 * Upgraded Highcharts core JS library to the latest release (2.1.2).
 
-### v0.2 2010 October 15 ###
+### [v0.2](https://github.com/miloschuman/yii-highcharts/releases/tag/v0.2) (2010 October 15) ###
 * Added support for the Exporting module, which allows users to download images or PDF's of your charts. See documentation for more details.
 * Fixed bug which prevented this widget from rendering in a different container.
 
-### v0.1 2010 October 7 ###
+### [v0.1](https://github.com/miloschuman/yii-highcharts/releases/tag/v0.1) (2010 October 7) ###
 * Initial release.
