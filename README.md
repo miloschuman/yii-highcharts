@@ -117,8 +117,11 @@ Tips
 Change Log
 ----------
 
+### [v3.0.4](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.4) (2013 August 02) ###
+* Upgraded Highcharts core library to the latest release (3.0.4). See the Highcharts [changelog](http://highcharts.com/documentation/changelog "Changelog") for more information about what's new in this version.
+
 ### [v3.0.2](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.2) (2013 July 22) ###
-* Upgraded Highcharts core library to the latest release (3.0.2). See the Highcharts [changelog](http://highcharts.com/documentation/changelog "Changelog") for more information about what's new in this version.
+* Upgraded Highcharts core library to the latest release (3.0.2).
 * The top-level 'scripts' option was added (per [Meng's recommendation](http://www.yiiframework.com/extension/highcharts/#c13934)) to streamline the inclusion of Highcharts' expanding catalog of adapters, modules, themes, and extended chart types. See "Tips" section above.
 
 ### [v2.3.5](https://github.com/miloschuman/yii-highcharts/releases/tag/v2.3.5) (2013 February 17) ###
