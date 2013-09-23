@@ -6,7 +6,7 @@
  * @author Milo Schuman <miloschuman@gmail.com>
  * @link https://github.com/miloschuman/yii-highcharts/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 3.0.4
+ * @version 3.0.5
  */
 
 /**
@@ -70,6 +70,9 @@
 class HighchartsWidget extends CWidget
 {
 
+	protected $_constr = 'Chart';
+	protected $_baseScript = 'highcharts';
+	
 	public $options = array();
 	public $htmlOptions = array();
 	public $scripts = array();
@@ -80,24 +83,27 @@ class HighchartsWidget extends CWidget
 	 */
 	public function run()
 	{
-		$id = $this->getId();
-		$this->htmlOptions['id'] = $id;
+		if (isset($this->htmlOptions['id']))
+			$id = $this->htmlOptions['id'];
+		else
+			$id = $this->htmlOptions['id'] = $this->getId();
 
 		echo CHtml::openTag('div', $this->htmlOptions);
 		echo CHtml::closeTag('div');
 
 		// check if options parameter is a json string
-		if(is_string($this->options)) {
-			if(!$this->options = CJSON::decode($this->options))
+		if (is_string($this->options)) {
+			if (!$this->options = CJSON::decode($this->options))
 				throw new CException('The options parameter is not valid JSON.');
-			// TODO translate exception message
 		}
 
 		// merge options with default values
-		$defaultOptions = array('chart' => array('renderTo' => $id), 'exporting' => array('enabled' => true));
+		$defaultOptions = array('chart' => array('renderTo' => $id));
 		$this->options = CMap::mergeArray($defaultOptions, $this->options);
+		array_unshift($this->scripts, $this->_baseScript);
+
 		$jsOptions = CJavaScript::encode($this->options);
-		$this->registerScripts(__CLASS__ . '#' . $id, "var chart = new Highcharts.Chart($jsOptions);");
+		$this->registerScripts(__CLASS__ . '#' . $id, "var chart = new Highcharts.{$this->_constr}($jsOptions);");
 	}
 
 
@@ -111,16 +117,17 @@ class HighchartsWidget extends CWidget
 	{
 		$basePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR;
 		$baseUrl = Yii::app()->getAssetManager()->publish($basePath, false, 1, YII_DEBUG);
-		$scriptFile = YII_DEBUG ? '/highcharts.src.js' : '/highcharts.js';
 
 		$cs = Yii::app()->clientScript;
 		$cs->registerCoreScript('jquery');
-		$cs->registerScriptFile($baseUrl . $scriptFile);
 
 		// register additional scripts
-		foreach($this->scripts as $script) {
-			$scriptFile = YII_DEBUG ? $script . '.src.js' : $script . '.js';
-			$cs->registerScriptFile("$baseUrl/$scriptFile");
+		foreach ($this->scripts as $script) {
+			if (YII_DEBUG && file_exists(realpath("$basePath/$script.src.js"))) {
+				$cs->registerScriptFile("$baseUrl/$script.src.js");
+			} else {
+				$cs->registerScriptFile("$baseUrl/$script.js");
+			}
 		}
 
 		$cs->registerScript($id, $embeddedScript, CClientScript::POS_LOAD);

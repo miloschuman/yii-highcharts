@@ -1,5 +1,5 @@
 /*
- Highcharts JS v3.0.4 (2013-08-02)
+ Highcharts JS v3.0.5 (2013-08-23)
  Exporting module
 
  (c) 2010-2013 Torstein Hønsi

@@ -16,21 +16,54 @@
 (function (Highcharts) {
 	var UNDEFINED,
 		Axis = Highcharts.Axis,
+		Chart = Highcharts.Chart,
 		each = Highcharts.each,
 		extend = Highcharts.extend,
 		merge = Highcharts.merge,
 		pick = Highcharts.pick,
 		numberFormat = Highcharts.numberFormat,
-		plotOptions = Highcharts.getOptions().plotOptions,
+		defaultOptions = Highcharts.getOptions(),
+		plotOptions = defaultOptions.plotOptions,
 		Color = Highcharts.Color,
 		noop = function () {};
+
+	// Set the default map navigation options
+	defaultOptions.mapNavigation = {
+		enabled: false,
+		buttonOptions: {
+			align: 'right',
+			verticalAlign: 'bottom',
+			x: 0,
+			width: 18,
+			height: 18,
+			style: {
+				fontSize: '15px',
+				fontWeight: 'bold',
+				textAlign: 'center'
+			}
+		},
+		buttons: {
+			zoomIn: {
+				onclick: function () {
+					this.mapZoom(0.5);
+				},
+				text: '+',
+				y: -32
+			},
+			zoomOut: {
+				onclick: function () {
+					this.mapZoom(2);
+				},
+				text: '-',
+				y: 0
+			}
+		}
+	};
 	
 	/**
 	 * Utility for reading SVG paths directly.
-	 * 
-	 * @todo This is moved to the Data plugin. Make sure it is deleted here.
 	 */
-	Highcharts.pathToArray = function (path) {
+	Highcharts.splitPath = function (path) {
 		var i;
 
 		// Move letters apart
@@ -41,6 +74,7 @@
 		// Split on spaces and commas
 		path = path.split(/[ ,]+/);
 		
+		// Parse numbers
 		for (i = 0; i < path.length; i++) {
 			if (!/[a-zA-Z]/.test(path[i])) {
 				path[i] = parseFloat(path[i]);
@@ -48,6 +82,9 @@
 		}
 		return path;
 	};
+
+	// A placeholder for map definitions
+	Highcharts.maps = {};
 	
 	/**
 	 * Extend the Axis object with methods specific to maps
@@ -110,6 +147,103 @@
 		
 		return proceed.call(this, chart, userOptions);
 	});
+
+
+	//--- Start zooming and panning features
+
+	Highcharts.wrap(Chart.prototype, 'render', function (proceed) {
+		proceed.call(this);
+		this.renderMapNavigation();
+	});
+
+	extend(Chart.prototype, {
+		renderMapNavigation: function () {
+			var chart = this,
+				options = this.options.mapNavigation,
+				buttons = options.buttons,
+				n,
+				button,
+				buttonOptions,
+				outerHandler = function () { 
+					this.handler.call(chart); 
+				};
+
+			if (pick(options.enabled, true)) {
+				for (n in buttons) {
+					if (buttons.hasOwnProperty(n)) {
+						buttonOptions = merge(options.buttonOptions, buttons[n]);
+
+						button = chart.renderer.button(buttonOptions.text, 0, 0, outerHandler)
+							.attr({
+								width: buttonOptions.width,
+								height: buttonOptions.height
+							})
+							.css(buttonOptions.style)
+							.add();
+						button.handler = buttonOptions.onclick;
+						button.align(extend(buttonOptions, { width: button.width, height: button.height }), null, 'spacingBox');
+					}
+				}
+			}
+		},
+
+		/**
+		 * Fit an inner box to an outer. If the inner box overflows left or right, align it to the sides of the
+		 * outer. If it overflows both sides, fit it within the outer. This is a pattern that occurs more places
+		 * in Highcharts, perhaps it should be elevated to a common utility function.
+		 */
+		fitToBox: function (inner, outer) {
+			each([['x', 'width'], ['y', 'height']], function (dim) {
+				var pos = dim[0],
+					size = dim[1];
+				if (inner[pos] + inner[size] > outer[pos] + outer[size]) { // right overflow
+					if (inner[size] > outer[size]) { // the general size is greater, fit fully to outer
+						inner[size] = outer[size];
+						inner[pos] = outer[pos];
+					} else { // align right
+						inner[pos] = outer[pos] + outer[size] - inner[size];
+					}
+				}
+				if (inner[pos] < outer[pos]) {
+					inner[pos] = outer[pos];
+				}
+				
+			});
+
+			return inner;
+		},
+
+		/**
+		 * Zoom the map in or out by a certain amount. Less than 1 zooms in, greater than 1 zooms out.
+		 */
+		mapZoom: function (howMuch) {
+			var xAxis = this.xAxis[0],
+				xRange = xAxis.max - xAxis.min,
+				centerX = xAxis.min + xRange / 2,
+				newXRange = xRange * howMuch,
+				yAxis = this.yAxis[0],
+				yRange = yAxis.max - yAxis.min,
+				centerY = yAxis.min + yRange / 2,
+				newYRange = yRange * howMuch,
+				newXMin = centerX - newXRange / 2,
+				newYMin = centerY - newYRange / 2,
+				newExt = this.fitToBox({
+					x: newXMin,
+					y: newYMin,
+					width: newXRange,
+					height: newYRange
+				}, {
+					x: xAxis.dataMin,
+					y: yAxis.dataMin,
+					width: xAxis.dataMax - xAxis.dataMin,
+					height: yAxis.dataMax - yAxis.dataMin
+				});
+
+			xAxis.setExtremes(newExt.x, newExt.x + newExt.width, false);
+			yAxis.setExtremes(newExt.y, newExt.y + newExt.height, false);
+			this.redraw();
+		}
+	});
 	
 	/**
 	 * Extend the default options with map options
@@ -124,6 +258,9 @@
 			borderWidth: 1,
 			marker: null,
 			stickyTracking: false,
+			dataLabels: {
+				verticalAlign: 'middle'
+			},
 			tooltip: {
 				followPointer: true,
 				headerFormat: '<span style="font-size:10px">{point.key}</span><br/>',
@@ -143,7 +280,7 @@
 			fill: 'color'
 		},
 		colorKey: 'y',
-		trackerGroups: ['group', 'markerGroup'],
+		trackerGroups: ['group', 'markerGroup', 'dataLabelsGroup'],
 		getSymbol: noop,
 		getExtremesFromAll: true,
 		init: function (chart) {
@@ -318,37 +455,45 @@
 		/**
 		 * Get the bounding box of all paths in the map combined.
 		 */
-		getBox: function () {
-			var chart = this.chart,
-				maxX = -Math.pow(2, 31), 
-				minX =  Math.pow(2, 31) - 1, 
-				maxY = -Math.pow(2, 31), 
-				minY =  Math.pow(2, 31) - 1,
-				xyRatio,
-				ratioCorrection,
-				plotWidth = chart.plotWidth, 
-				plotHeight = chart.plotHeight,
-				pad;
+		getBox: function (paths) {
+			var maxX = Number.MIN_VALUE, 
+				minX =  Number.MAX_VALUE, 
+				maxY = Number.MIN_VALUE, 
+				minY =  Number.MAX_VALUE;
 			
 			
 			// Find the bounding box
-			each(this.options.data, function (point) {
+			each(paths || this.options.data, function (point) {
 				var path = point.path,
 					i = path.length,
-					even = false; // while loop reads from the end
+					even = false, // while loop reads from the end
+					pointMaxX = Number.MIN_VALUE, 
+					pointMinX =  Number.MAX_VALUE, 
+					pointMaxY = Number.MIN_VALUE, 
+					pointMinY =  Number.MAX_VALUE;
 					
 				while (i--) {
 					if (typeof path[i] === 'number') {
 						if (even) { // even = x
-							maxX = Math.max(maxX, path[i]);
-							minX = Math.min(minX, path[i]);
+							pointMaxX = Math.max(pointMaxX, path[i]);
+							pointMinX = Math.min(pointMinX, path[i]);
 						} else { // odd = Y
-							maxY = Math.max(maxY, path[i]);
-							minY = Math.min(minY, path[i]);
+							pointMaxY = Math.max(pointMaxY, path[i]);
+							pointMinY = Math.min(pointMinY, path[i]);
 						}
 						even = !even;
 					}
 				}
+				// Cache point bounding box for use to position data labels
+				point._maxX = pointMaxX;
+				point._minX = pointMinX;
+				point._maxY = pointMaxY;
+				point._minY = pointMinY;
+
+				maxX = Math.max(maxX, pointMaxX);
+				minX = Math.min(minX, pointMinX);
+				maxY = Math.max(maxY, pointMaxY);
+				minY = Math.min(minY, pointMinY);
 			});
 			this.minY = minY;
 			this.maxY = maxY;
@@ -366,10 +511,10 @@
 		translatePath: function (path) {
 			
 			var series = this,
-				chart = series.chart,
 				even = false, // while loop reads from the end
 				xAxis = series.xAxis,
-				yAxis = series.yAxis;
+				yAxis = series.yAxis,
+				i;
 				
 			// Preserve the original
 			path = [].concat(path);
@@ -399,13 +544,8 @@
 		 */
 		translate: function () {
 			var series = this,
-				options = series.options,
 				dataMin = Number.MAX_VALUE,
-				dataMax = Number.MIN_VALUE,
-				opacity,
-				minOpacity = options.minOpacity,
-				path,
-				color;
+				dataMax = Number.MIN_VALUE;
 	
 			series.generatePoints();
 	
@@ -437,14 +577,19 @@
 			var seriesOptions = this.options,
 				valueRanges = seriesOptions.valueRanges,
 				colorRange = seriesOptions.colorRange,
-				colorKey = this.colorKey;
+				colorKey = this.colorKey,
+				from,
+				to;
+
+			if (colorRange) {
+				from = Color(colorRange.from);
+				to = Color(colorRange.to);
+			}
 			
 			each(this.data, function (point) {
 				var value = point[colorKey],
 					rgba = [],
 					range,
-					from,
-					to,
 					i,
 					pos;
 
@@ -461,8 +606,7 @@
 							
 					}
 				} else if (colorRange && value !== undefined) {
-					from = Color(colorRange.from);
-					to = Color(colorRange.to);
+
 					pos = (dataMax - value) / (dataMax - dataMin);
 					i = 4;
 					while (i--) {
@@ -470,7 +614,7 @@
 							to.rgba[i] + (from.rgba[i] - to.rgba[i]) * pos
 						);
 					}
-					point.options.color = 'rgba(' + rgba.join(',') + ')';
+					point.options.color = value === null ? seriesOptions.nullColor : 'rgba(' + rgba.join(',') + ')';
 				}
 			});
 		},
@@ -489,9 +633,8 @@
 		 */
 		drawPoints: function () {
 			var series = this,
-				chart = series.chart,
-				saturation,
-				bBox,
+				xAxis = series.xAxis,
+				yAxis = series.yAxis,
 				colorKey = series.colorKey;
 			
 			// Make points pass test in drawing
@@ -507,16 +650,16 @@
 			Highcharts.seriesTypes.column.prototype.drawPoints.apply(series);
 			
 			each(series.data, function (point) {
+
+				var dataLabels = point.dataLabels,
+					minX = xAxis.toPixels(point._minX, true),
+					maxX = xAxis.toPixels(point._maxX, true),
+					minY = yAxis.toPixels(point._minY, true),
+					maxY = yAxis.toPixels(point._maxY, true);
+
+				point.plotX = Math.round(minX + (maxX - minX) * pick(dataLabels && dataLabels.anchorX, 0.5));
+				point.plotY = Math.round(minY + (maxY - minY) * pick(dataLabels && dataLabels.anchorY, 0.5)); 
 				
-				bBox = point.graphic.getBBox();
-				// for tooltip
-				point.tooltipPos = [
-					bBox.x + bBox.width / 2,
-					bBox.y + bBox.height / 2
-				];
-				// for data labels
-				point.plotX = point.tooltipPos[0];
-				point.plotY = point.tooltipPos[1]; 
 				
 				// Reset escaped null points
 				if (point.isNull) {
@@ -536,18 +679,19 @@
 	Highcharts.Map = function (options, callback) {
 		
 		var hiddenAxis = {
-			endOnTick: false,
-			gridLineWidth: 0,
-			labels: {
-				enabled: false
+				endOnTick: false,
+				gridLineWidth: 0,
+				labels: {
+					enabled: false
+				},
+				lineWidth: 0,
+				minPadding: 0,
+				maxPadding: 0,
+				startOnTick: false,
+				tickWidth: 0,
+				title: null
 			},
-			lineWidth: 0,
-			minPadding: 0,
-			maxPadding: 0,
-			startOnTick: false,
-			tickWidth: 0,
-			title: null
-		};
+			seriesOptions;
 		
 		// Don't merge the data
 		seriesOptions = options.series;
@@ -555,7 +699,8 @@
 		
 		options = merge({
 			chart: {
-				type: 'map'
+				type: 'map',
+				panning: 'xy'
 			},
 			xAxis: hiddenAxis,
 			yAxis: merge(hiddenAxis, { reversed: true })	
