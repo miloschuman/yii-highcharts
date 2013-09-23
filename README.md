@@ -117,7 +117,7 @@ Tips
 Change Log
 ----------
 
-### [v3.0.5](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.4) (2013 September 23) ###
+### [v3.0.5](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.5) (2013 September 23) ###
 * Upgraded Highcharts core library to the latest release (3.0.5). See the Highcharts [changelog](http://highcharts.com/documentation/changelog "Changelog") for more information about what's new in this version.
 * Added support for Highstock library via HighstockWidget class
 * Resolved issue #1: Themes not applied when in debug mode
