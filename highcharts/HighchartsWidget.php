@@ -75,6 +75,7 @@ class HighchartsWidget extends CWidget
 	
 	public $options = array();
 	public $htmlOptions = array();
+	public $setupOptions = array();
 	public $scripts = array();
 
 
@@ -103,7 +104,8 @@ class HighchartsWidget extends CWidget
 		array_unshift($this->scripts, $this->_baseScript);
 
 		$jsOptions = CJavaScript::encode($this->options);
-		$this->registerScripts(__CLASS__ . '#' . $id, "var chart = new Highcharts.{$this->_constr}($jsOptions);");
+		$setupOptions = CJavaScript::encode($this->setupOptions);
+		$this->registerScripts(__CLASS__ . '#' . $id, "Highcharts.setOptions($setupOptions); var chart = new Highcharts.{$this->_constr}($jsOptions);");
 	}
 
 
