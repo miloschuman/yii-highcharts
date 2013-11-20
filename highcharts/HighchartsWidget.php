@@ -103,7 +103,7 @@ class HighchartsWidget extends CWidget
 		array_unshift($this->scripts, $this->_baseScript);
 
 		$jsOptions = CJavaScript::encode($this->options);
-		$this->registerScripts(__CLASS__ . '#' . $id, "var chart = new Highcharts.{$this->_constr}($jsOptions);");
+		$this->registerScripts(__CLASS__ . '#' . $id, "var $id = new Highcharts.{$this->_constr}($jsOptions);");
 	}
 
 
