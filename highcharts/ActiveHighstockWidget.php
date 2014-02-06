@@ -48,23 +48,25 @@ class ActiveHighstockWidget extends HighstockWidget
         $data = $this->dataProvider->getData();
         $series = $this->options['series'];
 
-        foreach ($series as $i => $batch) {
-            if (isset($batch['time']) && isset($batch['data']) &&
-                !is_array($batch['time']) && !is_array($batch['data'])
-            ) {
-                $dateSeries = array();
-                foreach ($data as $row) {
-                    $dateSeries[] = $this->processRow($row, $batch);
+        if(count($data) > 0) {
+            foreach ($series as $i => $batch) {
+                if (isset($batch['time']) && isset($batch['data']) &&
+                    !is_array($batch['time']) && !is_array($batch['data'])
+                ) {
+                    $dateSeries = array();
+                    foreach ($data as $row) {
+                        $dateSeries[] = $this->processRow($row, $batch);
+                    }
+
+                    // we'll work on the actual item, this may be PHP 5.3+ specific
+                    $this->sortDateSeries($dateSeries);
+
+                    // clean up our time item so we don't accidentally conflict with Highstock
+                    unset($this->options['series'][$i]['time']);
+
+                    // and then reset our data column with our data series
+                    $this->options['series'][$i]['data'] = $dateSeries;
                 }
-
-                // we'll work on the actual item, this may be PHP 5.3+ specific
-                $this->sortDateSeries($dateSeries);
-
-                // clean up our time item so we don't accidentally conflict with Highstock
-                unset($this->options['series'][$i]['time']);
-
-                // and then reset our data column with our data series
-                $this->options['series'][$i]['data'] = $dateSeries;
             }
         }
 
