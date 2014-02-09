@@ -9,7 +9,7 @@
  * @version 3.0.5
  */
 
-Yii::import('ext.highcharts.HighchartsWidget');
+Yii::import('highcharts.HighchartsWidget');
 
 /**
  * @see HighchartsWidget
