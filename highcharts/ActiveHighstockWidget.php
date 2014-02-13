@@ -28,6 +28,15 @@ $this->widget('highcharts.ActiveHighstockWidget', array(
                 // 'timeType'  => 'date',
                 // defaults to a mysql timestamp, other options are 'date' (run through strtotime()) or 'plain'
             ),
+            array(
+                'name'  => 'Site percentile',
+                'time'  => 'RankDate',          // time column in the dataprovider
+                'type'  => 'arearange',
+                'data'  => array(
+                    'Column1',      // specify an array of data options
+                    'Column2',      // if you are using an area range charts
+                ),
+            ),
         ),
     ),
     'dataProvider' => $dataProvider,
@@ -51,7 +60,7 @@ class ActiveHighstockWidget extends HighstockWidget
         if(count($data) > 0) {
             foreach ($series as $i => $batch) {
                 if (isset($batch['time']) && isset($batch['data']) &&
-                    !is_array($batch['time']) && !is_array($batch['data'])
+                    !is_array($batch['time'])
                 ) {
                     $dateSeries = array();
                     foreach ($data as $row) {
@@ -87,11 +96,14 @@ class ActiveHighstockWidget extends HighstockWidget
 
         switch ($timeType) {
             case 'plain':
-                return $this->processPlainTimestamp($row, $batch);
+                $time = $this->processPlainTimestamp($row, $batch);
+                break;
             case 'date':
-                return $this->processDate($row, $batch);
+                $time = $this->processDateString($row, $batch);
+                break;
             case 'mysql':
-                return $this->processMysql($row, $batch);
+                $time = $this->processMysqlTimestamp($row, $batch);
+                break;
             default:
                 $functionName = 'process' . ucfirst($timeType);
                 if(method_exists($this, $functionName)) {
@@ -100,6 +112,34 @@ class ActiveHighstockWidget extends HighstockWidget
                     throw new Exception("Can't call your custom date processing function");
                 }
         }
+
+        // process our data by running it through our data processing method
+        $data = $this->processData($row, $batch);
+
+        // push our data value on the front of what may be multiple data values
+        array_unshift($data, $time);
+
+        return $data;
+    }
+
+    /**
+     * Cleans up the data column so Highstock is happy
+     *
+     * @param $row
+     * @param $batch
+     * @return array
+     */
+    protected function processData($row, $batch)
+    {
+        if(!is_array($batch['data'])) {
+            return array(floatval($row[$batch['data']]));
+        }
+
+        $items = array();
+        foreach($batch['data'] as $item) {
+            $items[] = floatval($row[$item]);
+        }
+        return $items;
     }
 
     /**
@@ -110,10 +150,7 @@ class ActiveHighstockWidget extends HighstockWidget
      * @return array
      */
     protected function processPlainTimestamp($row, $batch) {
-        return array(
-            floatval($row[$batch['time']]),
-            $row[$batch['data']]
-        );
+        return floatval($row[$batch['time']]);
     }
 
     /**
@@ -123,11 +160,8 @@ class ActiveHighstockWidget extends HighstockWidget
      * @param $batch
      * @return array
      */
-    protected function processDate($row, $batch) {
-        return array(
-            1000 * floatval(strtotime($row[$batch['time']])),
-            floatval($row[$batch['data']])
-        );
+    protected function processDateString($row, $batch) {
+        return 1000 * floatval(strtotime($row[$batch['time']]));
     }
 
     /**
@@ -138,11 +172,8 @@ class ActiveHighstockWidget extends HighstockWidget
      * @param $batch
      * @return array
      */
-    protected function processMysql($row, $batch) {
-        return array(
-            1000 * floatval($row[$batch['time']]),
-            floatval($row[$batch['data']])
-        );
+    protected function processMysqlTimestamp($row, $batch) {
+        return 1000 * floatval($row[$batch['time']]);
     }
 
     /**
