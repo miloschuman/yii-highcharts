@@ -28,6 +28,15 @@ $this->widget('highcharts.ActiveHighstockWidget', array(
                 // 'timeType'  => 'date',
                 // defaults to a mysql timestamp, other options are 'date' (run through strtotime()) or 'plain'
             ),
+            array(
+                'name'  => 'Site percentile',
+                'time'  => 'RankDate',          // time column in the dataprovider
+                'type'  => 'arearange',
+                'data'  => array(
+                    'Column1',      // specify an array of data options
+                    'Column2',      // if you are using an area range charts
+                ),
+            ),
         ),
     ),
     'dataProvider' => $dataProvider,
@@ -51,7 +60,7 @@ class ActiveHighstockWidget extends HighstockWidget
         if(count($data) > 0) {
             foreach ($series as $i => $batch) {
                 if (isset($batch['time']) && isset($batch['data']) &&
-                    !is_array($batch['time']) && !is_array($batch['data'])
+                    !is_array($batch['time'])
                 ) {
                     $dateSeries = array();
                     foreach ($data as $row) {
@@ -107,10 +116,10 @@ class ActiveHighstockWidget extends HighstockWidget
         // process our data by running it through our data processing method
         $data = $this->processData($row, $batch);
 
-        return array(
-            $time,
-            $data,
-        );
+        // push our data value on the front of what may be multiple data values
+        array_unshift($data, $time);
+
+        return $data;
     }
 
     /**
@@ -118,11 +127,19 @@ class ActiveHighstockWidget extends HighstockWidget
      *
      * @param $row
      * @param $batch
-     * @return float
+     * @return array
      */
     protected function processData($row, $batch)
     {
-        return floatval($row[$batch['data']]);
+        if(!is_array($batch['data'])) {
+            return array(floatval($row[$batch['data']]));
+        }
+
+        $items = array();
+        foreach($batch['data'] as $item) {
+            $items[] = floatval($row[$item]);
+        }
+        return $items;
     }
 
     /**
