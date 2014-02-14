@@ -24,7 +24,7 @@ Links
 Requirements
 ------------
 
-* Yii 1.0 or above
+* Yii 1.1.5 or above
 * PHP 5.1 or above
 
 
