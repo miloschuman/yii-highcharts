@@ -6,7 +6,7 @@
  * @author Milo Schuman <miloschuman@gmail.com>
  * @link https://github.com/miloschuman/yii-highcharts/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 3.0.5
+ * @version 3.0.9
  */
 
 /**
@@ -124,14 +124,12 @@ class HighchartsWidget extends CWidget
 		$cs->registerCoreScript('jquery');
 
 		// register additional scripts
+		$extension = YII_DEBUG ? '.src.js' : '.js';
 		foreach ($this->scripts as $script) {
-			if (YII_DEBUG && file_exists(realpath("$basePath/$script.src.js"))) {
-				$cs->registerScriptFile("$baseUrl/$script.src.js");
-			} else {
-				$cs->registerScriptFile("$baseUrl/$script.js");
-			}
+			$cs->registerScriptFile("{$baseUrl}/{$script}{$extension}");
 		}
 
+		// register embedded script
 		$cs->registerScript($id, $embeddedScript, CClientScript::POS_LOAD);
 	}
 
