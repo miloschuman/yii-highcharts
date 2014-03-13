@@ -9,7 +9,7 @@
  * @version 3.0.9
  */
 
-require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'HighchartsWidget.php');
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'HighstockWidget.php');
 
 /**
  * Usage:
