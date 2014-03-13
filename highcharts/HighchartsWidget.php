@@ -6,7 +6,7 @@
  * @author Milo Schuman <miloschuman@gmail.com>
  * @link https://github.com/miloschuman/yii-highcharts/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 3.0.5
+ * @version 3.0.9
  */
 
 /**
@@ -75,6 +75,7 @@ class HighchartsWidget extends CWidget
 	
 	public $options = array();
 	public $htmlOptions = array();
+	public $setupOptions = array();
 	public $scripts = array();
 
 
@@ -103,7 +104,8 @@ class HighchartsWidget extends CWidget
 		array_unshift($this->scripts, $this->_baseScript);
 
 		$jsOptions = CJavaScript::encode($this->options);
-		$this->registerScripts(__CLASS__ . '#' . $id, "var chart = new Highcharts.{$this->_constr}($jsOptions);");
+		$setupOptions = CJavaScript::encode($this->setupOptions);
+		$this->registerScripts(__CLASS__ . '#' . $id, "Highcharts.setOptions($setupOptions); var chart = new Highcharts.{$this->_constr}($jsOptions);");
 	}
 
 
@@ -122,14 +124,12 @@ class HighchartsWidget extends CWidget
 		$cs->registerCoreScript('jquery');
 
 		// register additional scripts
+		$extension = YII_DEBUG ? '.src.js' : '.js';
 		foreach ($this->scripts as $script) {
-			if (YII_DEBUG && file_exists(realpath("$basePath/$script.src.js"))) {
-				$cs->registerScriptFile("$baseUrl/$script.src.js");
-			} else {
-				$cs->registerScriptFile("$baseUrl/$script.js");
-			}
+			$cs->registerScriptFile("{$baseUrl}/{$script}{$extension}");
 		}
 
+		// register embedded script
 		$cs->registerScript($id, $embeddedScript, CClientScript::POS_LOAD);
 	}
 

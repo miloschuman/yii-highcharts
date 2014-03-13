@@ -1,8 +1,8 @@
 /**
  * @license 
- * Highcharts funnel module, Beta
+ * Highcharts funnel module
  *
- * (c) 2010-2012 Torstein Hønsi
+ * (c) 2010-2014 Torstein Honsi
  *
  * License: www.highcharts.com/license
  */
@@ -235,6 +235,11 @@ seriesTypes.funnel = Highcharts.extendClass(seriesTypes.pie, {
 			}
 		});
 	},
+
+	/**
+	 * Funnel items don't have angles (#2289)
+	 */
+	sortByAngle: noop,
 	
 	/**
 	 * Extend the pie data label method

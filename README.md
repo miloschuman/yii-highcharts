@@ -24,7 +24,7 @@ Links
 Requirements
 ------------
 
-* Yii 1.0 or above
+* Yii 1.1.5 or above
 * PHP 5.1 or above
 
 
@@ -117,10 +117,15 @@ Tips
 Change Log
 ----------
 
+### [v3.0.9](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.9) (2014 February 17) ###
+* Upgraded Highcharts core library to the latest release (3.0.9). See the Highcharts [changelog](http://highcharts.com/documentation/changelog "Changelog") for more information about what's new in this version.
+* Added Composer support.
+* Added ActiveHighstockWidget. Please see class file for documentation.
+
 ### [v3.0.5](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.5) (2013 September 23) ###
-* Upgraded Highcharts core library to the latest release (3.0.5). See the Highcharts [changelog](http://highcharts.com/documentation/changelog "Changelog") for more information about what's new in this version.
-* Added support for Highstock library via HighstockWidget class
-* Resolved issue #1: Themes not applied when in debug mode
+* Upgraded Highcharts core library to the latest release (3.0.5).
+* Added support for Highstock library via HighstockWidget class.
+* Resolved issue #1: Themes not applied when in debug mode.
 
 ### [v3.0.4](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.4) (2013 August 02) ###
 * Upgraded Highcharts core library to the latest release (3.0.4).
