@@ -8,7 +8,6 @@
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  * @version 3.0.10
  */
-
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'HighchartsWidget.php');
 
 /**
@@ -19,5 +18,4 @@ class HighstockWidget extends HighchartsWidget
 
 	protected $_constr = 'StockChart';
 	protected $_baseScript = 'highstock';
-
 }

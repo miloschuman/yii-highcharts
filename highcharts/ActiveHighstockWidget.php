@@ -89,7 +89,8 @@ class ActiveHighstockWidget extends HighstockWidget
      * @param $batch
      * @return array
      */
-    protected function processRow($row, $batch) {
+    protected function processRow($row, $batch)
+    {
         // if we're dealing with a javascript timestamp
         // then just setup our array
         $timeType = (isset($batch['timeType'])) ? $batch['timeType'] : 'mysql';
@@ -149,7 +150,8 @@ class ActiveHighstockWidget extends HighstockWidget
      * @param $batch
      * @return array
      */
-    protected function processPlainTimestamp($row, $batch) {
+    protected function processPlainTimestamp($row, $batch)
+    {
         return floatval($row[$batch['time']]);
     }
 
@@ -160,7 +162,8 @@ class ActiveHighstockWidget extends HighstockWidget
      * @param $batch
      * @return array
      */
-    protected function processDateString($row, $batch) {
+    protected function processDateString($row, $batch)
+    {
         return 1000 * floatval(strtotime($row[$batch['time']]));
     }
 
@@ -172,7 +175,8 @@ class ActiveHighstockWidget extends HighstockWidget
      * @param $batch
      * @return array
      */
-    protected function processMysqlTimestamp($row, $batch) {
+    protected function processMysqlTimestamp($row, $batch)
+    {
         return 1000 * floatval($row[$batch['time']]);
     }
 
@@ -180,7 +184,9 @@ class ActiveHighstockWidget extends HighstockWidget
      * Sorts our date series so we have all the dates from first to last
      * @param $series
      */
-    protected function sortDateSeries(&$series) {
+    protected function sortDateSeries(&$series)
+    {
+        $dates = [];
 
         //sort by first column (dates ascending order)
         foreach ($series as $key => $row) {

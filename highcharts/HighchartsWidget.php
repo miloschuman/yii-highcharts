@@ -72,7 +72,6 @@ class HighchartsWidget extends CWidget
 
 	protected $_constr = 'Chart';
 	protected $_baseScript = 'highcharts';
-	
 	public $options = array();
 	public $htmlOptions = array();
 	public $setupOptions = array();
@@ -84,18 +83,20 @@ class HighchartsWidget extends CWidget
 	 */
 	public function run()
 	{
-		if (isset($this->htmlOptions['id']))
+		if (isset($this->htmlOptions['id'])) {
 			$id = $this->htmlOptions['id'];
-		else
+		} else {
 			$id = $this->htmlOptions['id'] = $this->getId();
+		}
 
 		echo CHtml::openTag('div', $this->htmlOptions);
 		echo CHtml::closeTag('div');
 
 		// check if options parameter is a json string
 		if (is_string($this->options)) {
-			if (!$this->options = CJSON::decode($this->options))
+			if (!$this->options = CJSON::decode($this->options)) {
 				throw new CException('The options parameter is not valid JSON.');
+			}
 		}
 
 		// merge options with default values
@@ -132,5 +133,4 @@ class HighchartsWidget extends CWidget
 		// register embedded script
 		$cs->registerScript($id, $embeddedScript, CClientScript::POS_LOAD);
 	}
-
 }
