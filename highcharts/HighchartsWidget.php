@@ -6,7 +6,7 @@
  * @author Milo Schuman <miloschuman@gmail.com>
  * @link https://github.com/miloschuman/yii-highcharts/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 3.0.10
+ * @version 4.0.1
  */
 
 /**
@@ -69,68 +69,65 @@
  */
 class HighchartsWidget extends CWidget
 {
+    protected $_constr = 'Chart';
+    protected $_baseScript = 'highcharts';
+    public $options = array();
+    public $htmlOptions = array();
+    public $setupOptions = array();
+    public $scripts = array();
 
-	protected $_constr = 'Chart';
-	protected $_baseScript = 'highcharts';
-	public $options = array();
-	public $htmlOptions = array();
-	public $setupOptions = array();
-	public $scripts = array();
+    /**
+     * Renders the widget.
+     */
+    public function run()
+    {
+        if (isset($this->htmlOptions['id'])) {
+            $id = $this->htmlOptions['id'];
+        } else {
+            $id = $this->htmlOptions['id'] = $this->getId();
+        }
 
+        echo CHtml::openTag('div', $this->htmlOptions);
+        echo CHtml::closeTag('div');
 
-	/**
-	 * Renders the widget.
-	 */
-	public function run()
-	{
-		if (isset($this->htmlOptions['id'])) {
-			$id = $this->htmlOptions['id'];
-		} else {
-			$id = $this->htmlOptions['id'] = $this->getId();
-		}
+        // check if options parameter is a json string
+        if (is_string($this->options)) {
+            if (!$this->options = CJSON::decode($this->options)) {
+                throw new CException('The options parameter is not valid JSON.');
+            }
+        }
 
-		echo CHtml::openTag('div', $this->htmlOptions);
-		echo CHtml::closeTag('div');
+        // merge options with default values
+        $defaultOptions = array('chart' => array('renderTo' => $id));
+        $this->options = CMap::mergeArray($defaultOptions, $this->options);
+        array_unshift($this->scripts, $this->_baseScript);
 
-		// check if options parameter is a json string
-		if (is_string($this->options)) {
-			if (!$this->options = CJSON::decode($this->options)) {
-				throw new CException('The options parameter is not valid JSON.');
-			}
-		}
+        $jsOptions = CJavaScript::encode($this->options);
+        $setupOptions = CJavaScript::encode($this->setupOptions);
+        $this->registerScripts(__CLASS__ . '#' . $id, "Highcharts.setOptions($setupOptions); var chart = new Highcharts.{$this->_constr}($jsOptions);");
+    }
 
-		// merge options with default values
-		$defaultOptions = array('chart' => array('renderTo' => $id));
-		$this->options = CMap::mergeArray($defaultOptions, $this->options);
-		array_unshift($this->scripts, $this->_baseScript);
+    /**
+     * Publishes and registers the necessary script files.
+     *
+     * @param string the id of the script to be inserted into the page
+     * @param string the embedded script to be inserted into the page
+     */
+    protected function registerScripts($id, $embeddedScript)
+    {
+        $basePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR;
+        $baseUrl = Yii::app()->getAssetManager()->publish($basePath, false, 1, YII_DEBUG);
 
-		$jsOptions = CJavaScript::encode($this->options);
-		$setupOptions = CJavaScript::encode($this->setupOptions);
-		$this->registerScripts(__CLASS__ . '#' . $id, "Highcharts.setOptions($setupOptions); var chart = new Highcharts.{$this->_constr}($jsOptions);");
-	}
+        $cs = Yii::app()->clientScript;
+        $cs->registerCoreScript('jquery');
 
+        // register additional scripts
+        $extension = YII_DEBUG ? '.src.js' : '.js';
+        foreach ($this->scripts as $script) {
+            $cs->registerScriptFile("{$baseUrl}/{$script}{$extension}");
+        }
 
-	/**
-	 * Publishes and registers the necessary script files.
-	 *
-	 * @param string the id of the script to be inserted into the page
-	 * @param string the embedded script to be inserted into the page
-	 */
-	protected function registerScripts($id, $embeddedScript)
-	{
-		$basePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR;
-		$baseUrl = Yii::app()->getAssetManager()->publish($basePath, false, 1, YII_DEBUG);
-
-		$cs = Yii::app()->clientScript;
-		$cs->registerCoreScript('jquery');
-
-		// register additional scripts
-		$extension = YII_DEBUG ? '.src.js' : '.js';
-		foreach ($this->scripts as $script) {
-			$cs->registerScriptFile("{$baseUrl}/{$script}{$extension}");
-		}
-
-		// register embedded script
-		$cs->registerScript($id, $embeddedScript, CClientScript::POS_LOAD);
-	}
+        // register embedded script
+        $cs->registerScript($id, $embeddedScript, CClientScript::POS_LOAD);
+    }
 }

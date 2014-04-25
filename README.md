@@ -10,7 +10,7 @@ Easily add [Highcharts](http://www.highcharts.com/) and Highstock graphs to your
 
 ![Screen Shot](http://www.yiiframework.com/extension/highcharts/files/screenshot.jpg)
 
->_Highcharts is a charting library written in pure HTML5/JavaScript, offering intuitive, interactive charts to your web site or web application. Highcharts currently supports line, spline, area, areaspline, column, bar, pie, scatter, angular gauges, arearange, areasplinerange, columnrange, bubble, box plot, error bars, funnel, waterfall and polar chart types._
+>Highcharts is a charting library written in pure HTML5/JavaScript, offering intuitive, interactive charts to your web site or web application. Highcharts currently supports line, spline, area, areaspline, column, bar, pie, scatter, angular gauges, arearange, areasplinerange, columnrange, bubble, box plot, error bars, funnel, waterfall and polar chart types.
 
 
 Links
@@ -79,13 +79,13 @@ $this->Widget('ext.highcharts.HighchartsWidget', array(
 ));
 ```
 
-*Note:* You must provide a *valid* JSON string (e.g. double quotes) when using the second option. You can quickly validate your JSON string online using [JSONLint](http://jsonlint.com/).
+*Note:* You must provide a *valid* JSON string (double quotes) when using the second option. You can quickly validate your JSON string online using [JSONLint](http://jsonlint.com/).
 
 
 Tips
 ----
 
-* If you need to use JavaScript in any of your configuration options (e.g. inline functions), use the `js:` prefix. For instance:
+* If you need to use JavaScript in any of your configuration options, use the `js:` prefix. For instance:
 
   ```php
   ...
@@ -120,8 +120,11 @@ Tips
 Change Log
 ----------
 
+### [v4.0.1](https://github.com/miloschuman/yii2-highcharts-widget/releases/tag/v4.0.1) (2014-04-25) ###
+* Upgraded Highcharts core library to the latest release (4.0.1). See the Highcharts [changelog](http://highcharts.com/documentation/changelog) for more information about what's new in this version.
+
 ### [v3.0.10](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.10) (2014-03-17) ###
-* Upgraded Highcharts core library to the latest release (3.0.10). See the Highcharts [changelog](http://highcharts.com/documentation/changelog) for more information about what's new in this version.
+* Upgraded Highcharts core library to the latest release (3.0.10).
 * Bugfix for active highcharts
 
 ### [v3.0.9](https://github.com/miloschuman/yii-highcharts/releases/tag/v3.0.9) (2014-02-17) ###

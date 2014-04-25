@@ -6,7 +6,7 @@
  * @author David Baker <github@acorncomputersolutions.com>
  * @link https://github.com/miloschuman/yii-highcharts/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 3.0.10
+ * @version 4.0.1
  */
 
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'HighstockWidget.php');
@@ -14,33 +14,33 @@ require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'HighstockWidget.php');
 /**
  * Usage:
  *
-$this->widget('highcharts.ActiveHighstockWidget', array(
-    'options' => array(
-        'title' => array('text' => 'Site Percentile'),
-        'yAxis' => array(
-            'title' => array('text' => 'Site Rank')
-        ),
-        'series' => array(
-            array(
-                'name'  => 'Site percentile',
-                'data'  => 'SiteRank12',        // data column in the dataprovider
-                'time'  => 'RankDate',          // time column in the dataprovider
-                // 'timeType'  => 'date',
-                // defaults to a mysql timestamp, other options are 'date' (run through strtotime()) or 'plain'
-            ),
-            array(
-                'name'  => 'Site percentile',
-                'time'  => 'RankDate',          // time column in the dataprovider
-                'type'  => 'arearange',
-                'data'  => array(
-                    'Column1',      // specify an array of data options
-                    'Column2',      // if you are using an area range charts
-                ),
-            ),
-        ),
-    ),
-    'dataProvider' => $dataProvider,
-));
+ * $this->widget('highcharts.ActiveHighstockWidget', array(
+ * 'options' => array(
+ * 'title' => array('text' => 'Site Percentile'),
+ * 'yAxis' => array(
+ * 'title' => array('text' => 'Site Rank')
+ * ),
+ * 'series' => array(
+ * array(
+ * 'name'  => 'Site percentile',
+ * 'data'  => 'SiteRank12',        // data column in the dataprovider
+ * 'time'  => 'RankDate',          // time column in the dataprovider
+ * // 'timeType'  => 'date',
+ * // defaults to a mysql timestamp, other options are 'date' (run through strtotime()) or 'plain'
+ * ),
+ * array(
+ * 'name'  => 'Site percentile',
+ * 'time'  => 'RankDate',          // time column in the dataprovider
+ * 'type'  => 'arearange',
+ * 'data'  => array(
+ * 'Column1',      // specify an array of data options
+ * 'Column2',      // if you are using an area range charts
+ * ),
+ * ),
+ * ),
+ * ),
+ * 'dataProvider' => $dataProvider,
+ * ));
  *
  * @see HighchartsWidget for additional options
  */
@@ -48,6 +48,7 @@ class ActiveHighstockWidget extends HighstockWidget
 {
     /**
      * Pass in a data provider that we will turn into the series
+     *
      * @var CDataProvider
      */
     public $dataProvider;
@@ -57,7 +58,7 @@ class ActiveHighstockWidget extends HighstockWidget
         $data = $this->dataProvider->getData();
         $series = $this->options['series'];
 
-        if(count($data) > 0) {
+        if (count($data) > 0) {
             foreach ($series as $i => $batch) {
                 if (isset($batch['time']) && isset($batch['data']) &&
                     !is_array($batch['time'])
@@ -87,6 +88,7 @@ class ActiveHighstockWidget extends HighstockWidget
      *
      * @param $row
      * @param $batch
+     * @throws Exception
      * @return array
      */
     protected function processRow($row, $batch)
@@ -107,7 +109,7 @@ class ActiveHighstockWidget extends HighstockWidget
                 break;
             default:
                 $functionName = 'process' . ucfirst($timeType);
-                if(method_exists($this, $functionName)) {
+                if (method_exists($this, $functionName)) {
                     return call_user_func(array($this, $functionName), $row, $batch);
                 } else {
                     throw new Exception("Can't call your custom date processing function");
@@ -132,12 +134,12 @@ class ActiveHighstockWidget extends HighstockWidget
      */
     protected function processData($row, $batch)
     {
-        if(!is_array($batch['data'])) {
+        if (!is_array($batch['data'])) {
             return array(floatval($row[$batch['data']]));
         }
 
         $items = array();
-        foreach($batch['data'] as $item) {
+        foreach ($batch['data'] as $item) {
             $items[] = floatval($row[$item]);
         }
         return $items;
@@ -182,11 +184,12 @@ class ActiveHighstockWidget extends HighstockWidget
 
     /**
      * Sorts our date series so we have all the dates from first to last
+     *
      * @param $series
      */
     protected function sortDateSeries(&$series)
     {
-        $dates = [];
+        $dates = array();
 
         //sort by first column (dates ascending order)
         foreach ($series as $key => $row) {
