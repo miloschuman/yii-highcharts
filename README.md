@@ -6,7 +6,7 @@ Yii Highcharts Widget
 [![License](https://poser.pugx.org/miloschuman/yii-highcharts/license.png)](https://packagist.org/packages/miloschuman/yii-highcharts)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/miloschuman/yii-highcharts/badges/quality-score.png?s=9a47e9e8f4f1c75e1ff36524ee75fc5ef65422bb)](https://scrutinizer-ci.com/g/miloschuman/yii-highcharts/)
 
-Easily add [Highcharts](http://www.highcharts.com/) and Highstock graphs to your Yii application.
+Easily add [Highcharts](http://www.highcharts.com/), Highstock and Highmaps graphs to your Yii application.
 
 ![Screen Shot](http://www.yiiframework.com/extension/highcharts/files/screenshot.jpg)
 
