@@ -6,7 +6,7 @@
  * @author Milo Schuman <miloschuman@gmail.com>
  * @link https://github.com/miloschuman/yii-highcharts/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 4.0.1
+ * @version 4.0.4
  */
 
 /**
@@ -75,6 +75,7 @@ class HighchartsWidget extends CWidget
     public $htmlOptions = array();
     public $setupOptions = array();
     public $scripts = array();
+    public $callback = false;
 
     /**
      * Renders the widget.
@@ -82,9 +83,9 @@ class HighchartsWidget extends CWidget
     public function run()
     {
         if (isset($this->htmlOptions['id'])) {
-            $id = $this->htmlOptions['id'];
+            $this->id = $this->htmlOptions['id'];
         } else {
-            $id = $this->htmlOptions['id'] = $this->getId();
+            $this->htmlOptions['id'] = $this->getId();
         }
 
         echo CHtml::openTag('div', $this->htmlOptions);
@@ -98,22 +99,17 @@ class HighchartsWidget extends CWidget
         }
 
         // merge options with default values
-        $defaultOptions = array('chart' => array('renderTo' => $id));
+        $defaultOptions = array('chart' => array('renderTo' => $this->id));
         $this->options = CMap::mergeArray($defaultOptions, $this->options);
         array_unshift($this->scripts, $this->_baseScript);
 
-        $jsOptions = CJavaScript::encode($this->options);
-        $setupOptions = CJavaScript::encode($this->setupOptions);
-        $this->registerScripts(__CLASS__ . '#' . $id, "Highcharts.setOptions($setupOptions); var chart = new Highcharts.{$this->_constr}($jsOptions);");
+        $this->registerAssets();
     }
 
     /**
      * Publishes and registers the necessary script files.
-     *
-     * @param string the id of the script to be inserted into the page
-     * @param string the embedded script to be inserted into the page
      */
-    protected function registerScripts($id, $embeddedScript)
+    protected function registerAssets()
     {
         $basePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR;
         $baseUrl = Yii::app()->getAssetManager()->publish($basePath, false, 1, YII_DEBUG);
@@ -127,7 +123,21 @@ class HighchartsWidget extends CWidget
             $cs->registerScriptFile("{$baseUrl}/{$script}{$extension}");
         }
 
-        // register embedded script
-        $cs->registerScript($id, $embeddedScript, CClientScript::POS_LOAD);
+        // highcharts and highstock can't live on the same page
+        if ($this->_baseScript === 'highstock') {
+            $cs->scriptMap["highcharts{$extension}"] = "{$baseUrl}/highstock{$extension}";
+        }
+
+        // prepare and register JavaScript code block
+        $jsOptions = CJavaScript::encode($this->options);
+        $setupOptions = CJavaScript::encode($this->setupOptions);
+        $js = "Highcharts.setOptions($setupOptions); var chart = new Highcharts.{$this->_constr}($jsOptions);";
+        $key = __CLASS__ . '#' . $this->id;
+        if (is_string($this->callback)) {
+            $callbackScript = "function {$this->callback}(data) {{$js}}";
+            $cs->registerScript($key, $callbackScript, CClientScript::POS_END);
+        } else {
+            $cs->registerScript($key, $js, CClientScript::POS_LOAD);
+        }
     }
 }
