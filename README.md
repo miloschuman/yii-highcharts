@@ -6,11 +6,22 @@ Yii Highcharts Widget
 [![License](https://poser.pugx.org/miloschuman/yii-highcharts/license.png)](https://packagist.org/packages/miloschuman/yii-highcharts)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/miloschuman/yii-highcharts/badges/quality-score.png?s=9a47e9e8f4f1c75e1ff36524ee75fc5ef65422bb)](https://scrutinizer-ci.com/g/miloschuman/yii-highcharts/)
 
-Easily add [Highcharts](http://www.highcharts.com/), Highstock and Highmaps graphs to your Yii application.
+Easily add [Highcharts, Highstock and Highmaps](http://www.highcharts.com/) graphs to your Yii application.
 
 ![Screen Shot](http://www.yiiframework.com/extension/highcharts/files/screenshot.jpg)
 
->Highcharts is a charting library written in pure HTML5/JavaScript, offering intuitive, interactive charts to your web site or web application. Highcharts currently supports line, spline, area, areaspline, column, bar, pie, scatter, angular gauges, arearange, areasplinerange, columnrange, bubble, box plot, error bars, funnel, waterfall and polar chart types.
+
+About
+-----
+
+## Highcharts ##
+> Create interactive charts easily for your web projects. Used by tens of thousands of developers and 59 out of the world's 100 largest companies, Highcharts is the simplest yet most flexible charting API on the market.
+
+## Highstock ##
+> Highstock lets you create stock or general timeline charts in pure JavaScript. Including sophisticated navigation options like a small navigator series, preset date ranges, date picker, scrolling and panning.
+
+## Highmaps ##
+> Build interactive maps to display sales, election results or any other information linked to geography. Perfect for standalone use or in dashboards in combination with Highcharts!
 
 
 Links
@@ -81,6 +92,8 @@ $this->Widget('ext.highcharts.HighchartsWidget', array(
 
 *Note:* You must provide a *valid* JSON string (double quotes) when using the second option. You can quickly validate your JSON string online using [JSONLint](http://jsonlint.com/).
 
+See [/doc/examples](https://github.com/miloschuman/yii-highcharts/tree/master/doc/examples) for more usage examples.
+
 
 Tips
 ----
@@ -120,7 +133,7 @@ Tips
 Change Log
 ----------
 
-### [v4.0.4](https://github.com/miloschuman/yii-highcharts/releases/tag/v4.0.4) (2014-09-12) ###
+### [v4.0.4](https://github.com/miloschuman/yii-highcharts/releases/tag/v4.0.4) (2014-09-19) ###
 * Upgraded Highcharts core library to the latest release (4.0.4). See the Highcharts [changelog](http://highcharts.com/documentation/changelog) for more information about what's new in this version. 
 * Added HighmapsWidget.
 * Added usage examples in [/doc/examples](https://github.com/miloschuman/yii-highcharts/tree/master/doc/examples).
