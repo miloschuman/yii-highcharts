@@ -32,6 +32,7 @@ $this->widget('highcharts.ActiveHighstockWidget', array(
                 'name'  => 'Site percentile',
                 'time'  => 'RankDate',          // time column in the dataprovider
                 'type'  => 'arearange',
+                'removeNulls' => true,
                 'data'  => array(
                     'Column1',      // specify an array of data options
                     'Column2',      // if you are using an area range charts
@@ -64,6 +65,11 @@ class ActiveHighstockWidget extends HighstockWidget
                 ) {
                     $dateSeries = array();
                     foreach ($data as $row) {
+
+                        if($this->shouldRemoveNullValues($series[$i], $row)) {
+                            continue;
+                        }
+
                         $dateSeries[] = $this->processRow($row, $batch);
                     }
 
@@ -80,6 +86,25 @@ class ActiveHighstockWidget extends HighstockWidget
         }
 
         parent::run();
+    }
+
+    /**
+     * Checks whether we want to remove null values from a series
+     *
+     * @param $series
+     * @param $row
+     *
+     * @return bool
+     */
+    private function shouldRemoveNullValues($series, $row)
+    {
+        if(isset($series['removeNulls']) && $series['removeNulls'] == true) {
+            if($row[$series['data']] == null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
