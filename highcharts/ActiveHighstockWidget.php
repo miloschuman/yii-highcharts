@@ -14,33 +14,34 @@ require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'HighstockWidget.php');
 /**
  * Usage:
  *
- * $this->widget('highcharts.ActiveHighstockWidget', array(
- * 'options' => array(
- * 'title' => array('text' => 'Site Percentile'),
- * 'yAxis' => array(
- * 'title' => array('text' => 'Site Rank')
- * ),
- * 'series' => array(
- * array(
- * 'name'  => 'Site percentile',
- * 'data'  => 'SiteRank12',        // data column in the dataprovider
- * 'time'  => 'RankDate',          // time column in the dataprovider
- * // 'timeType'  => 'date',
- * // defaults to a mysql timestamp, other options are 'date' (run through strtotime()) or 'plain'
- * ),
- * array(
- * 'name'  => 'Site percentile',
- * 'time'  => 'RankDate',          // time column in the dataprovider
- * 'type'  => 'arearange',
- * 'data'  => array(
- * 'Column1',      // specify an array of data options
- * 'Column2',      // if you are using an area range charts
- * ),
- * ),
- * ),
- * ),
- * 'dataProvider' => $dataProvider,
- * ));
+$this->widget('highcharts.ActiveHighstockWidget', array(
+    'options' => array(
+        'title' => array('text' => 'Site Percentile'),
+        'yAxis' => array(
+            'title' => array('text' => 'Site Rank')
+        ),
+        'series' => array(
+            array(
+                'name'  => 'Site percentile',
+                'data'  => 'SiteRank12',        // data column in the dataprovider
+                'time'  => 'RankDate',          // time column in the dataprovider
+                // 'timeType'  => 'date',
+                // defaults to a mysql timestamp, other options are 'date' (run through strtotime()) or 'plain'
+            ),
+            array(
+                'name'  => 'Site percentile',
+                'time'  => 'RankDate',          // time column in the dataprovider
+                'type'  => 'arearange',
+                'removeNulls' => true,
+                'data'  => array(
+                    'Column1',      // specify an array of data options
+                    'Column2',      // if you are using an area range charts
+                ),
+            ),
+        ),
+    ),
+    'dataProvider' => $dataProvider,
+));
  *
  * @see HighchartsWidget for additional options
  */
@@ -65,6 +66,11 @@ class ActiveHighstockWidget extends HighstockWidget
                 ) {
                     $dateSeries = array();
                     foreach ($data as $row) {
+
+                        if($this->shouldRemoveNullValues($series[$i], $row)) {
+                            continue;
+                        }
+
                         $dateSeries[] = $this->processRow($row, $batch);
                     }
 
@@ -81,6 +87,25 @@ class ActiveHighstockWidget extends HighstockWidget
         }
 
         parent::run();
+    }
+
+    /**
+     * Checks whether we want to remove null values from a series
+     *
+     * @param $series
+     * @param $row
+     *
+     * @return bool
+     */
+    private function shouldRemoveNullValues($series, $row)
+    {
+        if(isset($series['removeNulls']) && $series['removeNulls'] == true) {
+            if($row[$series['data']] == null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
