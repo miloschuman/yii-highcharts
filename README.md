@@ -132,9 +132,12 @@ Tips
 
 Change Log
 ----------
+### [v4.1.7](https://github.com/miloschuman/yii-highcharts/releases/tag/v4.1.7) (2015-07-09) ###
+* Upgraded Highcharts core library to the latest release (4.1.7). See the Highcharts [changelog](http://highcharts.com/documentation/changelog) for more information about what's new in this version.
+* Resolved [issue #12](https://github.com/miloschuman/yii-highcharts/issues/12) by introducing new 'scriptPosition' option.
 
 ### [v4.0.4](https://github.com/miloschuman/yii-highcharts/releases/tag/v4.0.4) (2014-09-19) ###
-* Upgraded Highcharts core library to the latest release (4.0.4). See the Highcharts [changelog](http://highcharts.com/documentation/changelog) for more information about what's new in this version. 
+* Upgraded Highcharts core library to the latest release (4.0.4). 
 * Added HighmapsWidget.
 * Added usage examples in [/doc/examples](https://github.com/miloschuman/yii-highcharts/tree/master/doc/examples).
 * Resolved [issue #8](https://github.com/miloschuman/yii-highcharts/issues/8): Using Highcharts and Highstock on the same page throws error 16

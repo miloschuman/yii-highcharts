@@ -6,7 +6,7 @@
  * @author Milo Schuman <miloschuman@gmail.com>
  * @link https://github.com/miloschuman/yii-highcharts/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 4.0.4
+ * @version 4.1.7
  */
 
 /**
@@ -76,7 +76,7 @@ class HighchartsWidget extends CWidget
     public $setupOptions = array();
     public $scripts = array();
     public $callback = false;
-    public $scriptPosition = CClientScript::POS_END;
+    public $scriptPosition = null;
 
     /**
      * Renders the widget.
@@ -121,7 +121,6 @@ class HighchartsWidget extends CWidget
         // register additional scripts
         $extension = YII_DEBUG ? '.src.js' : '.js';
         foreach ($this->scripts as $script) {
-            /* @var $cs CClientScript */
             $cs->registerScriptFile("{$baseUrl}/{$script}{$extension}", $this->scriptPosition);
         }
 
