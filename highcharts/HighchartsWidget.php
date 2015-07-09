@@ -76,6 +76,7 @@ class HighchartsWidget extends CWidget
     public $setupOptions = array();
     public $scripts = array();
     public $callback = false;
+    public $scriptPosition = CClientScript::POS_END;
 
     /**
      * Renders the widget.
@@ -120,7 +121,8 @@ class HighchartsWidget extends CWidget
         // register additional scripts
         $extension = YII_DEBUG ? '.src.js' : '.js';
         foreach ($this->scripts as $script) {
-            $cs->registerScriptFile("{$baseUrl}/{$script}{$extension}");
+            /* @var $cs CClientScript */
+            $cs->registerScriptFile("{$baseUrl}/{$script}{$extension}", $this->scriptPosition);
         }
 
         // highcharts and highstock can't live on the same page
