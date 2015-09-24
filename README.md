@@ -28,8 +28,9 @@ Links
 -----
 
 * [Home page](https://github.com/miloschuman/yii-highcharts)
-* [Try out a demo](http://www.highcharts.com/demo/)
+* [Highcharts demos](http://www.highcharts.com/demo/)
 * [Report a bug](https://github.com/miloschuman/yii-highcharts/issues)
+* [(**New**) Highcharts Extension for **Yii2**](http://www.yiiframework.com/extension/yii2-highcharts-widget)
 
 **Note:** Highcharts is free for non-commercial use only. For more information, please visit the [Highcharts License and Pricing](http://www.highcharts.com/license) page.
 
