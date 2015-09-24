@@ -8,7 +8,7 @@ Yii Highcharts Widget
 
 Easily add [Highcharts, Highstock and Highmaps](http://www.highcharts.com/) graphs to your Yii application.
 
-![Screen Shot](http://www.yiiframework.com/extension/highcharts/files/screenshot.jpg)
+![Screen Shot](http://www.yiiframework.com/extension/highcharts/files/screenshot.png)
 
 
 About
@@ -29,7 +29,6 @@ Links
 
 * [Home page](https://github.com/miloschuman/yii-highcharts)
 * [Try out a demo](http://www.highcharts.com/demo/)
-* [Join discussion](http://www.yiiframework.com/forum/index.php?/topic/12171-extension-highchartswidget/)
 * [Report a bug](https://github.com/miloschuman/yii-highcharts/issues)
 
 **Note:** Highcharts is free for non-commercial use only. For more information, please visit the [Highcharts License and Pricing](http://www.highcharts.com/license) page.
@@ -128,12 +127,23 @@ Tips
   Previous versions relied on auto-detection magic, but that became less reliable as Highcharts evolved. The new method
   more accurately follows the native process of including/excluding additional script files and gives the user some finer-grain control.
   For a list of available scripts, see the contents of `protected/extensions/highcharts/assets/`.
+* You can access the JavaScript chart object from another script like this:
+
+  ```javascript
+  var chart = $('#my-chart-id').highcharts();
+  ```
+  where `my-chart-id` is set via the top-level `id` configuration option. Just make sure you
+  register your script after the widget declaration so that it has a chance to initialize.
 
 
 Change Log
 ----------
+
+### [v4.1.8](https://github.com/miloschuman/yii-highcharts/releases/tag/v4.1.8) (2015-09-24) ###
+* Upgraded Highcharts core library to the latest release (4.1.8). See the Highcharts [changelog](http://highcharts.com/documentation/changelog) for more information about what's new in this version.
+
 ### [v4.1.7](https://github.com/miloschuman/yii-highcharts/releases/tag/v4.1.7) (2015-07-09) ###
-* Upgraded Highcharts core library to the latest release (4.1.7). See the Highcharts [changelog](http://highcharts.com/documentation/changelog) for more information about what's new in this version.
+* Upgraded Highcharts core library to the latest release (4.1.7).
 * Resolved [issue #12](https://github.com/miloschuman/yii-highcharts/issues/12) by introducing new 'scriptPosition' option.
 
 ### [v4.0.4](https://github.com/miloschuman/yii-highcharts/releases/tag/v4.0.4) (2014-09-19) ###
