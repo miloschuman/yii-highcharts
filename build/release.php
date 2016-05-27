@@ -27,6 +27,7 @@ $stockVer = trim(fgets(STDIN)) ?: $stockVer;
 echo "\nEnter the HIGHMAPS version [$mapsVer]: ";
 $mapsVer = trim(fgets(STDIN)) ?: $mapsVer;
 
+
 exclaim("Fetching archives");
 $dir = dirname(dirname(__FILE__)) . '/highcharts/assets';
 if (!is_dir($dir) || !chdir($dir)) {
@@ -47,6 +48,7 @@ rmdir js
 rm *.zip
 `;
 
+
 exclaim("Purging extraneous assets");
 echo `rm -rfv parts* *debug* .htaccess`;
 
@@ -58,19 +60,15 @@ for file in $(find . -name '*.js' ! -name '*.src.js'); do
 done
 `;
 
-exclaim("Updating Version Identifiers");
-echo `
-cd ..
-sed -i -r "s/@version [0-9\.]+/@version $ver/" *.php
-cd ..
-sed -i -r "s/ See the Highcharts \[changelog\]\(http:\/\/highcharts.com\/documentation\/changelog\) for more information about what's new in this version.//" README.md
-now=$(date +"%F")
-sed -i "/^----------$/ a\\
-\\
-### [v$ver](https://github.com/miloschuman/yii-highcharts/releases/tag/v$ver) (\${now}) ###\\
-* Upgraded Highcharts core library to the latest release ($ver). See the Highcharts [changelog](http://highcharts.com/documentation/changelog) for more information about what's new in this version.\
-" README.md
-`;
+exclaim("Updating Changelog");
+$fileName = dirname(dirname(__FILE__)) . '/CHANGELOG.md';
+$changelogLink = " See the Highcharts [changelog](http://highcharts.com/documentation/changelog) for more information about what's new in this version.";
+$changelogEntry = "### [v$ver](https://github.com/miloschuman/yii2-highcharts/releases/tag/v$ver) ($date) ###\n"
+    . "* Upgraded Highcharts JS library to the latest release ($ver).$changelogLink";
+$contents = file_get_contents($fileName);
+$contents = str_replace($changelogLink, '', $contents);
+$contents = str_replace("===\n", "===\n\n$changelogEntry\n", $contents);
+file_put_contents($fileName, $contents);
 
 
 exclaim("Done, bitch!");

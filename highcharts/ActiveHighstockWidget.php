@@ -6,7 +6,6 @@
  * @author David Baker <github@acorncomputersolutions.com>
  * @link https://github.com/miloschuman/yii-highcharts/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
- * @version 4.2.3
  */
 
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'HighstockWidget.php');
