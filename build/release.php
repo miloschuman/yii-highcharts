@@ -11,6 +11,8 @@ function exclaim($msg)
     echo "\n\033[1;36m" . $msg . "\033[0m\n";
 }
 
+date_default_timezone_set('America/New_York');
+$date = date('Y-m-d');
 
 /* Get version number of latest releases */
 $products = file_get_contents('http://code.highcharts.com/products.js');
